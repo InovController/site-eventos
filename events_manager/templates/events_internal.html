@@ -1,0 +1,118 @@
+{% extends 'base_nav.html' %}
+{% load custom_tags %}
+
+{% load static %}
+{% block content %}
+    <style>
+        .event {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .event:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .event-info {
+            margin-top: 10px;
+            color: #5a5a5a;
+        }
+
+        .event-status {
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 20px;
+        }
+
+        .badge-inscrito {
+            position: absolute;
+            top: 14px;
+            right: 10px;
+            background-color: #cf9816;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+        }
+
+        .rotate-icon {
+            transition: transform 0.5s ease;
+        }
+
+        .rotate-icon-up {
+            transform: rotate(180deg);
+        }
+
+        .rotate-icon-down {
+            transform: rotate(0deg);
+        }
+    </style>
+
+    <div class="page-header">
+        <h1 class="page-title fs-3">
+            Eventos Internos
+        </h1>
+    </div>
+
+    <div class="page-category">
+        {% if grouped_events %}
+            <p class="fw-bold">Acompanhe todos os eventos internos programados!</p>
+            <p>
+                Fique por dentro dos próximos eventos internos e não perca a oportunidade de participar de reuniões, treinamentos e atividades especiais. Confira os detalhes abaixo para se planejar e estar presente nos momentos importantes da nossa organização.
+            </p>
+        {% else %}
+            <p class="fw-bold">Desculpe, nenhum evento disponível!</p>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        {% for group in grouped_events %}
+            <div class="card p-0" style="background-color: transparent; border: none; box-shadow: none;">
+                <div class="card-header bg-academy text-center mt-3 mt-md-0 mb-4 mx-2 text-light rounded-3 d-flex justify-content-between align-items-center">
+                    <h4 class="m-0">
+                        <i class="fas fa-calendar-minus"></i> {{ group.date|month_year_format }}
+                    </h4>
+                    <!-- Ao clicar, oculta/mostra os eventos deste mês -->
+                    <a href="#collapse-{{ forloop.counter }}" class="text-light" data-bs-toggle="collapse" aria-expanded="true" onclick="toggleIcon(this)">
+                        <h4 class="m-0">
+                            <i class="fas {% if forloop.counter == 1 %} fa-chevron-down {% else %} fa-chevron-up {% endif %} rotate-icon rotate-icon-down"></i>
+                        </h4>
+                    </a>
+                </div>
+    
+                <div id="collapse-{{ forloop.counter }}" class="collapse {% if forloop.counter == 1 %} show {% endif %}">
+                    <div class="row mx-2 mt-3">
+                        {% for event in group.events %}
+                            <div class="col-12 col-sm-6 col-xl-4 mb-3">
+                                <div class="card event shadow-lg position-relative">
+                                    {% if title != "encerrados" %}
+                                        {% if event.pk in participating_event_ids %}
+                                            <div class="badge-inscrito">Inscrito</div>
+                                        {% endif %}
+                                    {% endif %}
+                                    <div class="p-3 card-black bg-academy rounded-top-3">
+                                        <h5 class="text-center card-text"><i class="fas fa-bullhorn"></i> Fiscal</h5>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <h1 class="card-title text-truncate text-academy-green fs-4">{{ event.title|title }}</h1>
+                                        <h5 class="card-text text-muted p-0 m-0"><i class="fas fa-map-marker-alt"></i> {{ event.location|title }}</h5>
+                                        <p class="card-text p-0 mt-2 m-0"><small>{{ event.date|date:"d/m/Y" }} - {{ event.time }}</small></p>
+                                        <a href="{% url 'event_detail' event.pk %}?origin=internal" class="btn mt-3 mb-3 btn-academy">Saiba Mais</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <script>
+        function toggleIcon(element) {
+            var icon = element.querySelector('i'); // Pega o ícone da seta dentro do link 
+            icon.classList.toggle('rotate-icon-up');
+            icon.classList.toggle('rotate-icon-down');
+        }
+    </script>
+{% endblock %}

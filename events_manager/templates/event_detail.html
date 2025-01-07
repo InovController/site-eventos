@@ -1,0 +1,164 @@
+{% extends 'event_nav.html' %}
+
+{% block content %}
+    <div class="page-header text-center">
+        <h4 class="page-title fs-3">Detalhes</h4>
+        <ul class="breadcrumbs justify-content-center">
+            <li class="nav-home">
+                <a href="#">
+                    <i class="icon-home"></i>
+                </a>
+            </li>
+            <li class="separator mx-2">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'event_detail' object.pk %}">{{ object.title|title }}</a>
+            </li>
+            <li class="separator mx-2">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#">Detalhes</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="page-category">
+        <p>Dentro desta página, você poderá visualizar todos os detalhes referentes ao evento.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-9 mx-auto">
+            <div class="card border-0">
+                <div class="card-header text-center bg-academy py-3 rounded-top-3">
+                    <h2 class="card-title text-light">Participe do Evento {{ object.kind|title }} {{ object.title|title }}</h2>
+                </div>
+                <div class="card-body my-4">
+                    <div class="row">
+                        {% if object.photo %}
+                            <div class="col-12 col-md-6 mb-4">
+                                <img class="img-fluid rounded" src="{{ object.photo.url }}" alt="imagem_do_evento" style="width: 100%;">
+                            </div>
+                        {% endif %}
+                    
+                        <div class="col-12 col-md-6 mb-4">
+                            <h5><strong>Sobre o Evento:</strong></h5>
+                            <p>{{ object.description|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if object.status != 'encerrado' %}
+                <form id="participationForm" class="text-center">
+                    {% csrf_token %}
+                    <button id="participationButton" data-action="{% if is_participating %}unsubscribe{% else %}subscribe{% endif %}" 
+                            class="btn {% if is_participating %}btn-outline-danger{% else %}btn-outline-success{% endif %} btn-lg">
+                        <span class="btn-label">
+                            <i id="participationIcon" class="{% if is_participating %}fas fa-lock{% else %}fas fa-lock-open{% endif %}"></i>
+                        </span>
+                        <span id="participationText">{% if is_participating %}Sair do Evento{% else %}Inscrever-se{% endif %}</span>
+                        <span id="participationSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </button>
+                    <p class="text-muted mt-2" id="participationMessage">
+                        {% if is_participating %}
+                            Você está inscrito neste evento!
+                        {% else %}
+                            Inscreva-se para receber todas as novidades e notificações do evento!
+                        {% endif %}
+                    </p>
+                </form>
+            {% endif %}
+        </div>
+
+        <div class="col-md-3">
+            <div class="info-section">
+
+                <div class="card card-stats border-0 bg-academy mb-3 text-center shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <i class="fas fa-clock fa-2x"></i>
+                            <h5 class="mb-0">Carga Hóraria: {{ object.duration }}h</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-stats border-0 bg-academy mb-3 text-center shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <i class="fas fa-map-marker-alt fa-2x"></i>
+                            <h5 class="mb-0">{{ object.location|title }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-stats border-0 bg-academy mb-3 text-center shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <i class="{% if object.status == 'aberto' %} fas fa-calendar-check {% else %} fas fa-calendar-times {% endif %} fa-2x"></i>
+                            <h5 class="mb-0">{{ object.status|title }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block end-js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const origin = urlParams.get('origin');
+            if (origin) {
+                localStorage.setItem('origin', origin);
+            }
+        });
+
+        document.getElementById('participationButton').addEventListener('click', function(event) {
+            event.preventDefault();
+            const action = this.getAttribute('data-action');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const url = action === 'subscribe' ? '{% url "subscribe_event" event.id %}' : '{% url "unsubscribe_event" event.id %}';
+
+            const participationButton = document.getElementById('participationButton');
+            const participationIcon = document.getElementById('participationIcon');
+            const participationText = document.getElementById('participationText');
+            const participationSpinner = document.getElementById('participationSpinner');
+
+            participationButton.disabled = true;
+            participationSpinner.classList.remove('d-none');
+            participationText.classList.add('d-none');
+
+            setTimeout(() => {
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken }
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (action === 'subscribe') {
+                            participationButton.classList.replace('btn-outline-success', 'btn-outline-danger');
+                            participationIcon.classList.replace('fa-lock-open', 'fa-lock');
+                            participationText.textContent = 'Sair do Evento';
+                            participationButton.setAttribute('data-action', 'unsubscribe');
+                            participationMessage.textContent = 'Você está inscrito este evento'
+                        } else {
+                            participationButton.classList.replace('btn-outline-danger', 'btn-outline-success');
+                            participationIcon.classList.replace('fa-lock', 'fa-lock-open');
+                            participationText.textContent = 'Inscrever-se';
+                            participationButton.setAttribute('data-action', 'subscribe');
+                            participationMessage.textContent = 'Inscreva-se para receber todas as novidades e notificações do evento!'
+                        }
+                    } else {
+                        alert('Erro ao processar sua solicitação.');
+                    }
+                }).catch(error => console.error('Erro:', error))
+                .finally(() => {
+                    participationButton.disabled = false;
+                    participationSpinner.classList.add('d-none');
+                    participationText.classList.remove('d-none');
+                });
+            }, 500);
+        });
+    </script>
+{% endblock %}

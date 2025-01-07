@@ -1,0 +1,37 @@
+{% extends 'event_nav.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <h4 class="page-title fs-3">Apagar</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home">
+                <a href="#">
+                    <i class="icon-home"></i>
+                </a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'event_detail' object.pk %}">{{ object.title|title }}</a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#">Apagar</a>
+            </li>
+        </ul>
+    </div>
+    <div class="page-category">
+        <p>Tem certeza que deseja deletar o evento de titulo "<strong>{{ object.title }}</strong>" referente a data "<strong>{{ object.date }}</strong>"?</p>
+        <p>Se atente que não será possível recuperar quaisquer dados posteriormente.</p>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="buttons-container">
+            <button id="deleteButton" type="submit" class="btn btn-danger">Deletar Evento</button>
+            <a href="{% url 'event_detail' object.pk %}" class="btn btn-info">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

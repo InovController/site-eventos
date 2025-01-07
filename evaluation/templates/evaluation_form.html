@@ -1,0 +1,275 @@
+{% extends 'event_nav.html' %}
+
+{% block title %}Avaliação Comportamental{% endblock %}
+
+{% block content %}
+    <style>
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin: 0 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adiciona sombra */
+            border-radius: 50%; /* Para manter o formato circular */
+            transition: all 0.3s ease;
+            border-color: green; /* Cor da borda ao selecionar */
+        }
+
+        .form-check-input:focus {
+            outline: none;
+            border-color: green; /* Cor da borda ao selecionar */
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5); /* Sombra de foco */
+        }
+
+        .form-check-input:checked  {
+            background-color: green; /* Cor de fundo ao selecionar */
+            border-color: green; /* Cor da borda ao selecionar */
+        }
+
+        .form-check-label {
+            margin-left: 5px;
+            font-size: 16px;
+        }
+        
+        .alert-success {
+            border-color: #047714 !important; /* Alterar a cor da borda */
+        }
+    </style>
+
+    <div class="page-header d-print-none">
+        <h4 class="page-title">Avaliação</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home">
+                <a href="#">
+                    <i class="icon-home"></i>
+                </a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#">{{ object.title|title }}</a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#">Avaliação</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="page-category">
+        {% if evaluation_complete %}
+            <div class="alert alert-success">
+                <h4>Avaliação já foi submetida</h4>
+                <p>Você já respondeu a esta avaliação. Obrigado por sua participação!</p>
+            </div>
+        {% elif not participation_validated %}
+            <div class="alert alert-danger text-center">
+                <i class="fas fa-lock"></i>
+                <strong>Presença não confirmada!</strong><br>
+                É necessário se validar no evento para ter acesso a avaliação comportamental.
+            </div>
+        {% else %}
+            {% if object.status != 'encerrado' %}
+                <div class="alert alert-danger text-center">
+                    <i class="fas fa-lock"></i>
+                    <strong>O evento ainda não foi encerrado!</strong><br>
+                    A avaliação comportamental estará disponível após o término do evento.
+                </div>
+            {% else %}
+                <p class="mb-4">
+                    Solicitamos a sua colaboração nesta avaliação, muito importante para o planejamento didático e para aperfeiçoamento de nossos treinamentos
+                </p>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% if object.status == 'encerrado' and participation_validated and not evaluation_complete %}
+        <div class="row">
+            <div class="col-md-12">
+                <form id="evaluationForm" method="POST" action="{% url 'evaluation_form' object.id %}">
+                    {% csrf_token %}
+                    <div class="question-page" id="page-1">
+                        <div class="card mb-4 shadow-lg">
+                            <div class="card-header text-light text-center rounded-top-3 bg-academy">
+                                <h5>Controle Interno – Avaliação de Reação</h5>
+                            </div>
+                            <div class="card-body mb-4">
+                                <div class="row mb-3">
+                                    <div class="col-12 text-center">
+                                        <p class="fs-5 mb-4">
+                                            Marque com um “X” ao lado de cada item descrito, sob o número que mais se aproxima de seu julgamento, de acordo com a seguinte legenda:
+                                        </p>
+                                        <div class="d-flex justify-content-center mb-4">
+                                            <div class="p-2">
+                                                <span class="badge bg-dark fs-6">1 – Péssimo</span>
+                                            </div>
+                                            <div class="py-2 p-sm-2">
+                                                <span class="badge bg-danger fs-6">2 – Ruim</span>
+                                            </div>
+                                            <div class="p-2">
+                                                <span class="badge bg-warning fs-6">3 – Regular</span>
+                                            </div>
+                                            <div class="py-2 p-sm-2">
+                                                <span class="badge bg-primary fs-6">4 – Bom</span>
+                                            </div>
+                                            <div class="p-2">
+                                                <span class="badge bg-success fs-6">5 – Excelente</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted">
+                                            Por favor, selecione a opção que melhor reflete sua opinião para cada item da avaliação.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Páginas das perguntas dinâmicas -->
+                    {% for theme, questions in questions_by_theme.items %}
+                        <div class="question-page d-none" id="page-{{ forloop.counter0|add:2 }}">
+                            <div class="card mb-4 shadow-lg">
+                                <div class="card-header text-light text-center rounded-top-3 bg-academy">
+                                    <h5>{{ theme.name }}</h5>
+                                </div>
+                                <div class="card-body mb-4">
+                                    {% for question in questions %}
+                                        <div class="row mb-4">
+                                            <div class="col-12">
+                                                <p class="fw-bold">{{ forloop.counter }}. {{ question.question_text }}</p>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-around">
+                                                    {% if question.question_type == 'multiple_choice' %}
+                                                        {% for i in "12345" %}
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="question_{{ question.id }}_{{ i }}" value="{{ i }}" required>
+                                                                <label class="form-check-label" for="question_{{ question.id }}_{{ i }}">{{ i }}</label>
+                                                            </div>
+                                                        {% endfor %}
+                                                    {% elif question.question_type == 'open_text' %}
+                                                        <textarea class="form-control" name="question_{{ question.id }}" id="question_{{ question.id }}" placeholder="Escreva sua resposta" rows="3" cols="100" required></textarea>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                
+                    <!-- Botões de navegação -->
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-academy mx-4 d-none" id="prevBtn" onclick="nextPrev(-1)"><i class="fas fa-angle-left"></i> Anterior</button>
+                        <button type="button" class="btn btn-academy ms-auto mx-4" id="nextBtn" onclick="nextPrev(1)">Próxima <i class="fas fa-angle-right"></i></button>
+                        <button type="submit" class="btn btn-success d-none ms-auto mx-4" id="submitBtn">Enviar</button>
+                    </div>
+                    <div class="text-center mt-2">
+                        <p id="stepIndicator">1 de {{ total_pages }}</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block end-js %}
+    <script>
+        let currentPage = 1;
+        const totalPages = {{ total_pages }};
+        const stepIndicator = document.getElementById('stepIndicator');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const eventStatus = "{{ object.status }}";
+
+        function checkPageCompletion() {
+            const currentQuestions = document.querySelectorAll(`#page-${currentPage} .form-check-input, #page-${currentPage} textarea`);
+            let allAnswered = true;
+
+            currentQuestions.forEach((input) => {
+                if ((input.type === 'radio' && !document.querySelector(`input[name="${input.name}"]:checked`)) ||
+                    (input.tagName === 'TEXTAREA' && input.value.trim() === '')) {
+                    allAnswered = false;
+                }
+            });
+
+            // Se o evento não estiver encerrado, o botão "Próxima" permanece desabilitado
+            if (eventStatus !== 'encerrado') {
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = !allAnswered;
+            }
+        }
+
+        // Verificar a completude da página inicial
+        checkPageCompletion();
+
+        function nextPrev(step) {
+            const pages = document.querySelectorAll('.question-page');
+            pages[currentPage - 1].classList.add('d-none');
+            currentPage += step;
+            pages[currentPage - 1].classList.remove('d-none');
+
+            // Atualizando o texto do indicador de progresso
+            stepIndicator.innerText = `${currentPage} de ${totalPages}`;
+
+            // Ativar/desativar botões de navegação
+            if (currentPage != 1) {
+                document.getElementById('prevBtn').classList.remove('d-none');
+            } else {
+                document.getElementById('prevBtn').classList.add('d-none');
+            }
+
+            // Se for a última página, mostrar o botão "Enviar"
+            if (currentPage === totalPages) {
+                nextBtn.classList.add('d-none');
+                submitBtn.classList.remove('d-none');
+            } else {
+                nextBtn.classList.remove('d-none');
+                submitBtn.classList.add('d-none');
+            }
+
+            checkPageCompletion();
+        }
+
+        document.querySelectorAll('.form-check-input, textarea').forEach((input) => {
+            input.addEventListener('change', checkPageCompletion);
+            input.addEventListener('input', checkPageCompletion);
+        });
+
+        // Função para mostrar o SweetAlert2 ao enviar o formulário
+        document.getElementById('evaluationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            Swal.fire({
+                title: 'Enviar Avaliação?',
+                text: "Tem certeza de que deseja enviar suas respostas?",
+                icon: 'warning',
+                showCancelButton: true,
+                reverseButtons: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, enviar!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Exibir a mensagem de sucesso e adicionar um pequeno atraso antes do envio
+                    Swal.fire({
+                        title: 'Enviado!',
+                        text: 'Sua avaliação foi enviada com sucesso.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+
+                    setTimeout(() => {
+                        this.submit();  // Enviar o formulário após o tempo definido
+                    }, 2000);  // Aguardar 2 segundos antes de enviar o formulário
+                }
+            });
+        });
+    </script>
+{% endblock %}

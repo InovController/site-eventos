@@ -1,0 +1,261 @@
+{% extends 'event_nav.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <style>
+        .rotate-icon {
+            transition: transform 0.5s ease;
+        }
+
+        .rotate-icon-up {
+            transform: rotate(90deg);
+        }
+
+        .rotate-icon-down {
+            transform: rotate(0deg);
+        }
+    </style>
+    <div class="page-header">
+        <h4 class="page-title fs-3">Dashboard</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home">
+                <a href="#">
+                    <i class="icon-home"></i>
+                </a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'event_detail' object.pk %}">{{ object.title|title }}</a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#">Dashboard</a>
+            </li>
+        </ul>
+    </div>
+    <div class="page-category">
+        Verifique abaixo gráficos para entender melhor a avaliação comportamental e aceitação do público sobre o evento.
+    </div>
+    
+    <div class="row">
+        {% for theme, questions in numeric_questions_by_theme.items %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">{{ theme }}</div>
+                        <div class="card-subtitle py-1">Media Geral das Respostas</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="barChart-{{ forloop.counter }}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div id="pieChartTitle-{{ forloop.counter }}" class="card-title">{{ theme }}</div>
+                        <div class="card-subtitle py-1">Porcentagem de Cada Resposta</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="pieChart-{{ forloop.counter }}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Exibir respostas textuais -->
+        {% for theme, questions in text_questions_by_theme.items %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">{{ theme }}</h4>
+                    </div>
+                    <div class="card-body mt-2">
+                        <!-- Para cada pergunta dentro do tema -->
+                        {% for question in questions %}
+                            <div class="collapse-header mb-4">
+                                <a href="#collapse-{{ question|slugify }}" data-bs-toggle="collapse" aria-expanded="true" onclick="toggleIcon(this)">
+                                    <h5 class="text-academy-green  mb-3"><i class="fas fa-angle-right rotate-icon rotate-icon-down"></i> {{ question.question_text }}</h5>
+                                </a>
+                            </div>
+                            <div id="collapse-{{ question|slugify }}" class="collapse response-container">
+                                <!-- Listando cada resposta textual -->
+                                {% for answer in question.answers %}
+                                    <div class="response-card mx-3">
+                                        <span class="response-text mt-0 fs-6">{{ answer }}</span>
+                                    </div>
+                                    <hr class="response-separator mt-2 pt-2 {% if forloop.last %}mb-4{% endif %} mx-2">
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block end-js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    
+    <script>
+        function toggleIcon(element) {
+            var icon = element.querySelector('i');
+            icon.classList.toggle('rotate-icon-up');
+            icon.classList.toggle('rotate-icon-down');
+        }
+        
+        function generateColorPalette(size) {
+            const colors = [
+                "rgba(46, 204, 113, 0.9)",
+                "rgba(22, 160, 133, 0.9)",
+                "rgba(41, 128, 185, 0.9)",
+                "rgba(39, 174, 96, 0.9)",
+                "rgba(142, 68, 173, 0.9)",
+            ];
+            return Array.from({length: size}, (_, i) => colors[i % colors.length]);
+        }
+
+        {% for theme, questions in numeric_questions_by_theme.items %}
+            (function() {
+                let labels = [{% for question in questions %}"{{ question.question_text|slice:":10" }}...", {% endfor %}];
+                let data = [{% for question in questions %}parseFloat("{{ question.avg_score|floatformat:2 }}".replace(',', '.')){% if not forloop.last %}, {% endif %}{% endfor %}];
+                let fullLabels = [{% for question in questions %}"{{ question.question_text }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+                let backgroundColors = generateColorPalette(labels.length);
+
+                var pieChartTitle = document.getElementById('pieChartTitle-{{ forloop.counter }}')
+                pieChartTitle.textContent = fullLabels[0];
+                
+                let responseDistributions = [
+                    {% for question in questions %}
+                        {
+                            labels: [1, 2, 3, 4, 5],
+                            data: [
+                                {{ question.distribution.1 }},
+                                {{ question.distribution.2 }},
+                                {{ question.distribution.3 }},
+                                {{ question.distribution.4 }},
+                                {{ question.distribution.5 }}
+                            ]
+                        }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ];
+                
+                let ctxPie = document.getElementById('pieChart-{{ forloop.counter }}').getContext('2d');
+                let pieChart = new Chart(ctxPie, {
+                    type: 'pie',
+                    data: {
+                        labels: responseDistributions[0].labels,
+                        datasets: [{
+                            data: responseDistributions[0].data,
+                            backgroundColor: backgroundColors,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        var dataset = tooltipItems[0].dataset;
+                                        var currentValue = dataset.data[tooltipItems[0].dataIndex];
+                                        return 'Quantidade: ' + currentValue;
+                                    },
+                                    label: function(tooltipItem) {
+                                        const label = tooltipItem.label;
+                                        return 'Nota: ' + label;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                formatter: (value, context) => {
+                                    let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    let percentage = (value / total * 100).toFixed(1);
+                                    let label = context.chart.data.labels[context.dataIndex];
+
+                                    if (percentage > 0) {
+                                        return  percentage + '%' + "\n" + "Nota: " + label;
+                                    } else {
+                                        return '';
+                                    }
+                                },
+                                color: '#fff',
+                                font: {
+                                    size: '18'
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+
+                let ctxBar = document.getElementById('barChart-{{ forloop.counter }}').getContext('2d');
+                let barChart = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: backgroundColors,
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        var idx = tooltipItems[0].dataIndex;
+                                        return fullLabels[idx];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 5
+                            }
+                        },
+                        onClick: function(evt, activeElements) {
+                            if (activeElements.length > 0) {
+                                var index = activeElements[0].index;
+                                pieChart.data.datasets[0].data =[0, 0, 0, 0, 0];
+                                pieChart.update();
+
+                                setTimeout(() => {
+                                    pieChart.data.datasets[0].data = responseDistributions[index].data;
+
+                                    pieChart.update();
+                                }, 250);
+
+                                pieChartTitle.textContent = fullLabels[index];
+                            }
+                        }
+                    }
+                });
+            })();
+        {% endfor %}
+    </script>
+{% endblock %}

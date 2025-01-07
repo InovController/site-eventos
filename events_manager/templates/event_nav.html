@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% endblock %}
+
+{% load custom_tags %}
+{% block event_details_nav %}
+    {% if user.is_authenticated %}
+        <li class="nav-section d-print-none">
+            <span class="sidebar-mini-icon">
+                <i class="fa fa-ellipsis-h"></i>
+            </span>
+            <h4 class="text-section">Detalhes do Evento</h4>
+            <li class="nav-item {% if active_page == 'event_detail' %}active{% endif %}">
+                <a href="{% url 'event_detail' object.pk %}">
+                    <i class="fas fa-bars"></i>
+                    <p>Detalhes</p>
+                </a>
+            </li>
+            <li class="nav-item {% if active_page == 'evaluation_form' %}active{% endif %}">
+                <a href="{% url 'evaluation_form' object.pk %}">
+                    <i class="fas fa-pen-alt"></i>
+                    <p>Avaliação</p>
+                </a>
+            </li>
+            <li class="nav-item {% if active_page == 'event_certificate' %}active{% endif %}">
+                <a href="{% url 'event_certificate' object.pk %}">
+                    <i class="fas fa-award"></i>
+                    <p>Certificado</p>
+                </a>
+            </li>
+        </li>
+        {% if user|has_group:"RH" %}
+            <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                    <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Visualização Interna</h4>
+                <li class="nav-item {% if active_page == 'event_participants' %}active{% endif %}">
+                    <a href="{% url 'event_participants' object.pk %}">
+                        <i class="fas fa-user-clock"></i>
+                        <p>Participantes</p>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'event_qrcode' %}active{% endif %}">
+                    <a href="{% url 'event_qrcode' object.pk %}">
+                        <i class="fas fa-qrcode"></i>
+                        <p>QR Code</p>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'evaluation_dashboard' %}active{% endif %}">
+                    <a href="{% url 'evaluation_dashboard' object.pk %}">
+                        <i class="fas fa-chart-pie"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'update_page' %}active{% endif %}">
+                    <a href="{% url 'event_update' object.pk %}">
+                        <i class="fas fa-paste"></i>
+                        <p>Editar Informações</p>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'delete_page' %}active{% endif %}">
+                    <a href="{% url 'event_delete' object.pk %}?origin={{ event.kind }}">
+                        <i class="fas fa-trash-alt"></i>
+                        <p>Apagar</p>
+                    </a>
+                </li>
+            {% endif %}
+        </li>
+    {% endif %}
+    <li class="nav-section">
+        <span class="sidebar-mini-icon">
+            <i class="fa fa-ellipsis-h"></i>
+        </span>
+        <h4 class="text-section">Voltar</h4>
+        <li class="nav-item">
+            <a id="backButton" href="#">
+                <i class="fas fa-arrow-left"></i>
+                <p>Voltar Página</p>
+            </a>
+        </li>
+    </li>
+{% endblock %}
+
+{% block start-js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const backButton = document.getElementById('backButton');
+            backButton.addEventListener('click', handleBackButtonClick);
+
+            function handleBackButtonClick() {
+                const origin = localStorage.getItem('origin');
+
+                if (origin === 'external') {
+                    window.location.href = '{% url "events_external" %}';
+                } else if (origin === 'internal') {
+                    window.location.href = '{% url "events_internal" %}';
+                }else if (origin === 'closed') {
+                    window.location.href = '{% url "events_closed" %}';
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base_nav.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <h4 class="page-title fs-3">Novo evento</h4>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="create_event_form">
+                        {% csrf_token %}
+                    
+                        <div class="form-group">
+                            <label for="id_title">Título:</label>
+                            <input type="text" placeholder="Digite o título do evento" class="form-control" id="id_title" name="title" value="{{ form.title.value|default_if_none:'' }}">
+                            {{ form.title.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_location">Localização:</label>
+                            <input type="text" placeholder="Digite a localização do evento" class="form-control" id="id_location" name="location" value="{{ form.location.value|default_if_none:'' }}">
+                            {{ form.location.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_date">Data:</label>
+                            <input type="date" class="form-control" id="id_date" name="date" value="{{ form.date.value|default_if_none:'' }}">
+                            {{ form.date.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_time">Hora:</label>
+                            <input type="time" class="form-control" id="id_time" name="time" value="{{ form.time.value|default_if_none:'' }}">
+                            {{ form.time.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_duration">Duração (Horas):</label>
+                            <input type="number" placeholder="Digite a duração em horas" class="form-control" id="id_duration" name="duration" value="{{ form.duration.value|default_if_none:'' }}">
+                            {{ form.duration.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_kind">Tipo de Evento:</label>
+                            <select class="form-control" id="id_kind" name="kind">
+                                {% for value, label in form.kind.field.choices %}
+                                    <option value="{{ value }}" {% if form.kind.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {{ form.kind.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_status">Status:</label>
+                            <select class="form-control" id="id_status" name="status">
+                                {% for value, label in form.status.field.choices %}
+                                    <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {{ form.status.errors }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_departament">Departamentos:</label>
+                            <select class="form-control" id="id_departament" name="departament">
+                                {% for value, label in form.departament.field.choices %}
+                                    <option value="{{ value }}" {% if form.departament.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {{ form.departament.errors }}
+                        </div>
+                        
+                        
+                        <div class="form-group">
+                            <label for="id_main_group">Evento Mestre:</label>
+                            <select class="form-control" id="id_main_group" name="main_group">
+                                {% for value, label in form.main_group.field.choices %}
+                                    <option value="{{ value }}" {% if form.main_group.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {{ form.main_group.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_description">Descrição:</label>
+                            <textarea class="form-control" id="id_description" name="description" rows="3">{{ form.description.value|default_if_none:'' }}</textarea>
+                            {{ form.description.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_photo">Foto:</label>
+                            <input type="file" class="form-control-file" id="id_photo" name="photo">
+                            {{ form.photo.errors }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-action">
+                    <button class="btn btn-primary" form="create_event_form">Cadastrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'event_nav.html' %}
+
+{% block title %}Certificado{% endblock %}
+
+{% load static %}
+{% block content %}
+    <div class="page-header d-print-none">
+        <h4 class="page-title fs-3">Certificado</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home">
+                <a href="#">
+                    <i class="icon-home"></i>
+                </a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'event_detail' object.pk %}">{{ object.title|title }}</a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#">Certificado</a>
+            </li>
+        </ul>
+    </div>
+    <div class="page-category">
+        {% if not participation_validated %}
+            <div class="alert alert-danger text-center">
+                <i class="fas fa-lock"></i>
+                <strong>Presença não confirmada!</strong><br>
+                É necessário se validar no evento para ter acesso ao download do certificado.
+            </div>
+        {% else %}
+            {% if event.status != 'encerrado' %}
+                <div class="alert alert-danger text-center">
+                    <i class="fas fa-lock"></i>
+                    <strong>O evento ainda não foi encerrado!</strong><br>
+                    O download do certificado estará disponível após o término do evento.
+                </div>
+            {% else %}
+                <p class="mb-4">
+                    Visualize ou faça o download do seu certificado abaixo.
+                </p>
+            {% endif %}
+        {% endif %}
+    </div>
+        
+    {% if event.status == 'encerrado' and participation_validated %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-center">
+                    {% if event.status == 'encerrado' %}
+                        <img src="{% static 'assets/img/certificado_controller.png' %}" alt="Certificado" class="img-fluid rounded shadow-lg mb-4">
+                    {% endif %}
+                </div>
+                {% if event.status == 'encerrado' %}
+                    <div class="mb-4 text-center">
+                        <a href="{% static 'assets/img/certificado_controller.png' %}" download class="btn btn-primary">
+                            <i class="fas fa-download"></i> Baixar Certificado
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

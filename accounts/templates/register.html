@@ -1,0 +1,79 @@
+{% extends 'base_nav.html' %}
+
+{% block title %} Crie sua conta {% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Registrar-se</div>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="registerform">
+                        {% csrf_token %}
+                    
+                        <div class="form-group">
+                            <label for="id_email">Email: </label>
+                            <input type="email" placeholder="Digite seu email" class="form-control" id="id_email" name="email" value="{{ user_form.email.value|default_if_none:'' }}">
+                            {{ user_form.email.errors }}
+                        </div>
+                    
+                        <div class="form-group">
+                            <label for="id_first_name">Nome: </label>
+                            <input type="text" placeholder="Digite seu nome" class="form-control" id="id_first_name" name="first_name" value="{{ user_form.first_name.value|default_if_none:'' }}">
+                            {{ user_form.first_name.errors }}
+                        </div>
+                    
+                        <div class="form-group">
+                            <label for="id_last_name">Sobrenome: </label>
+                            <input type="text" placeholder="Digite seu sobrenome" class="form-control" id="id_last_name" name="last_name" value="{{ user_form.last_name.value|default_if_none:'' }}">
+                            {{ user_form.last_name.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_company">Empresa:</label>
+                            <input type="text" placeholder="Digite o nome da sua empresa" class="form-control" id="id_company" name="company" value="{{ user_form.company.value|default_if_none:'' }}">
+                            {{ user_form.company.errors }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_phone">Telefone:</label>
+                            <input type="text" placeholder="(00) 00000-0000" class="form-control" id="id_phone" name="phone" value="{{ user_form.phone.value|default_if_none:'' }}">
+                            {{ user_form.phone.errors }}
+                        </div>
+                    
+                        <div class="form-group">
+                            <label for="id_password1">Senha: </label>
+                            <input type="password" placeholder="Digite sua senha" class="form-control" id="id_password1" name="password1">
+                            {{ user_form.password1.errors }}
+                        </div>
+                    
+                        <div class="form-group">
+                            <label for="id_password2">Confirmar senha: </label>
+                            <input type="password" placeholder="Confirme sua senha" class="form-control" id="id_password2" name="password2">
+                            {{ user_form.password2.errors }}
+                        </div>
+                    
+                    </form>
+                </div>
+                <div class="card-action">
+                    <button class="btn btn-academy" form="registerform">Cadastrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function(){
+        $('#id_phone').inputmask({
+            mask: "(99) 99999-9999",
+            placeholder: "",
+            clearIncomplete: true,
+            showMaskOnHover: false
+        });
+    });
+    </script>
+{% endblock %}

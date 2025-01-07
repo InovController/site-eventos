@@ -1,0 +1,39 @@
+{% extends 'event_nav.html' %}
+
+{% block title %}Validando Presença...{% endblock %}
+
+{% load static %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="m-0 p-0">Validando Presença</h3>
+                </div>
+                <div class="card-body text-center my-5">
+                    <h5>{{ message }}</h5>
+                    <p>Redirecionando para a página de eventos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SweetAlert2 Script -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Notificação SweetAlert2 para validação bem-sucedida
+            Swal.fire({
+                title: 'Presença validada!',
+                text: 'Sua presença foi registrada com sucesso para o evento "{{ object.title|title }}".',
+                icon: 'success',
+                confirmButtonText: 'Ok',
+                willClose: () => {
+                    // Redirecionar após a notificação
+                    window.location.href = "{% url 'event_detail' object.pk %}";
+                }
+            });
+        });
+    </script>
+{% endblock %}

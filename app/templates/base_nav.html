@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% load custom_tags %}
+{% block nav-bar %}
+    <li class="nav-item {% if status == '' %}active{% endif %}">
+        <a href="https://www.controlleracademy.com.br/" class="collapsed" aria-expanded="false">
+            <i class="fas fa-home"></i>
+            <p>Inicio</p>
+        </a>
+    </li>
+    {% if not user.is_authenticated %}
+    <li class="nav-section">
+        <h4 class="text-section">Sua conta</h4>
+        <li class="nav-item {% if url_name == 'register' %}active{% endif %}">
+            <a href="{% url 'register' %}">
+                <i class="fas fa-key"></i>
+                <p>Cadastrar-se</p>
+            </a>
+        </li>
+        <li class="nav-item {% if url_name == 'login' %}active{% endif %}">
+            <a href="{% url 'login' %}">
+                <i class="fas fa-user-lock"></i>
+                <p>Entrar</p>
+            </a>
+        </li>
+    </li>
+    {% else %}
+        <li class="nav-section">
+            <h4 class="text-section">Visualizador de Eventos</h4>
+            <li class="nav-item {% if url_name == 'events_external' %}active{% endif %}">
+                <a href="{% url 'events_external' %}">
+                    <i class="fas fa-door-open"></i>
+                    <p>Eventos Externos</p>
+                </a>
+            </li>
+            <li class="nav-item {% if url_name == 'events_internal' %}active{% endif %}">
+                <a href="{% url 'events_internal' %}">
+                    <i class="fas fa-door-closed"></i>
+                    <p>Eventos Internos</p>
+                </a>
+            </li>
+        </li>
+        {% if user|has_group:"RH" %}
+            <li class="nav-section">
+                <h4 class="text-section">Gerenciador de Eventos</h4>
+                <li class="nav-item {% block active_create %}{% endblock %}">
+                    <a data-bs-toggle="collapse" href="#create">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>Agendar</p>
+                        <span class="caret"></span>
+                    </a>
+                    <div class="collapse" id="create">
+                        <ul class="nav nav-collapse">
+                            <li>
+                                <a href="{% url 'event_create' %}">
+                                    <span class="sub-item">Novo Evento</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="sidebar-style-2.html">
+                                    <span class="sub-item">Criar Categoria</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item {% block active_edit %}{% endblock %}">
+                    <a data-bs-toggle="collapse" href="#edit">
+                        <i class="fas fa-pen"></i>
+                        <p>Editar</p>
+                        <span class="caret"></span>
+                    </a>
+                    <div class="collapse" id="edit">
+                        <ul class="nav nav-collapse">
+                            <li>
+                                <a href="sidebar-style-2.html">
+                                    <span class="sub-item">Atualizar Categoria</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </li>
+            <li class="nav-section">
+                <h4 class="text-section">Contatos</h4>
+                <li class="nav-item">
+                    <a href="{% url 'events_internal' %}">
+                        <i class="fas fa-phone"></i>
+                        <p>Fale Conosco</p>
+                    </a>
+                </li>
+            </li>
+        {% endif %}
+    {% endif %}
+{% endblock %}

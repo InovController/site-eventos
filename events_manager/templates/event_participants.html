@@ -1,0 +1,76 @@
+{% extends 'event_nav.html' %}
+
+{% block content %}
+    <style>
+        .table th, .table td {
+            width: 20%;
+        }
+    </style>
+    <div class="page-header">
+        <h4 class="page-title fs-3">Participantes</h4>
+        <ul class="breadcrumbs">
+            <li class="nav-home">
+                <a href="#">
+                    <i class="icon-home"></i>
+                </a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'event_detail' object.id %}">{{ object.title|title }}</a>
+            </li>
+            <li class="separator">
+                <i class="icon-arrow-right"></i>
+            </li>
+            <li class="nav-item">
+                <a href="#">Participantes</a>
+            </li>
+        </ul>
+    </div>
+    {% if participants %}
+        <div class="page-category">
+            <p>Confira abaixo a lista de participantes.</p>
+        </div>
+        <div class="row">
+            <div class="card">
+                <div class="card-body table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="text-center">Nome</th>
+                                <th scope="col" class="text-center">E-mail</th>
+                                <th scope="col" class="text-center">Celular</th>
+                                <th scope="col" class="text-center">Empresa</th>
+                                <th scope="col" class="text-center">Presença</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participant in participants %}
+                                {% if participant.is_present or participant.signed_up %}
+                                    <tr>
+                                        <td class="text-center">{{ participant.user.first_name }} {{ participant.user.last_name }}</td>
+                                        <td class="text-center">{{ participant.user.email }}</td>
+                                        <td class="text-center">{{ participant.user.phone }}</td>
+                                        <td class="text-center">{{ participant.user.company }}</td>
+                                        <td class="text-center">
+                                            {% if participant.is_present %}
+                                                <span class="badge bg-success">Presente</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Não presente</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="page-category">
+            <p>Nenhuma pessoa se inscreveu no evento...</p>
+        </div>
+    {% endif %}
+{% endblock %}
