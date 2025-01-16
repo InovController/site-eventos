@@ -52,6 +52,10 @@
                     padding: 0 !important;
                 }
 
+                #print-page {
+                    display: none;
+                }
+
                 /* Ajusta o wrapper e o main-panel para ocupar 100% da página */
                 .wrapper, .main-panel {
                     width: 100% !important;
@@ -113,36 +117,54 @@
             }
 
             .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active > a {
-                background: linear-gradient(135deg, #007e58 0%, #003f3a 100%) !important;
+                color: #0B424B !important;
+                background: rgb(230, 230, 230) !important;
+            }
+
+            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active > a i,
+            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active > a p {
+                color: #0F7D84 !important; /* Cor do ícone do botão ativo */
+                font-weight: 700;
             }
 
             .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item a:hover i,
             .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item a:focus i {
-                color: #28a745 !important; /* Cor verde ao passar o mouse */
+                color: white !important; /* Cor do ícone quando hover */
+            }
+            
+            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item a p {
+                color: white !important; /* Cor padrão do texto */
+                font-size: 1.1em;
+            }
+            
+            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-section h4 {
+                color: white !important; /* Cor padrão do texto h4 */
             }
 
             .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active a:hover i,
-            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active a:focus i {
-                color: white !important; /* Mantém a cor do ícone inalterada */
+            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active a:focus i,
+            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active a:hover p,
+            .sidebar.sidebar-style-2 .nav.nav-secondary > .nav-item.active a:focus p {
+                color: #0B424B !important; /* Cor quando hover em cima do active */
             }
 
             .sidebar .nav.nav-secondary > .nav-item a i {
-                color: #007e58 !important;
+                color: rgb(215, 215, 215) !important; /* Cor padrão do icone */
             }
 
             .bg-academy {
                 color: white !important;
-                background: linear-gradient(135deg, #007e58 0%, #003f3a 100%) !important;
+                background: linear-gradient(90deg, #0B424B 0%, #0F7D84 100%) !important;
             }
 
             .btn-academy {
                 color: white !important;
-                background: linear-gradient(135deg, #007e58 0%, #003f3a 100%) !important;
+                background: linear-gradient(135deg, #0B424B 0%, #0F7D84 100%) !important;
                 border: 0 !important;
             }
 
             .text-academy-green {
-                color: #00694a !important;
+                color: #0F7D84 !important;
             }
 
             .text-academy {
@@ -170,7 +192,7 @@
             }
 
             .dropdown-item-academy:active {
-                background: linear-gradient(135deg, #007e58 0%, #003f3a 100%) !important;
+                background: linear-gradient(135deg, #0F7D84 0%, #0B424B 100%) !important;
                 border-radius: 12px 12px 12px;
             }
         </style>
@@ -204,7 +226,7 @@
                     </div>
                     <!-- End Logo Header -->
                 </div>
-                <div class="sidebar-wrapper scrollbar scrrollbar-inner d-print-none bg-nav-white sombra">
+                <div class="sidebar-wrapper scrollbar scrrollbar-inner d-print-none bg-academy sombra">
                     <div class="sidebar-content">
                         <ul class="nav nav-secondary">
                             {% block nav-bar %}

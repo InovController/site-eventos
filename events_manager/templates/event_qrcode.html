@@ -28,6 +28,9 @@
     </div>
     <div class="row">
         <div class="col-md-12">
+            <button id="print-page" class="btn btn-primary mb-3 px-4">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
             <div class="card">
                 <div class="card-body text-center mt-5 py-5">
                     <h1 class="card-text">{{ object.title|title }}</h1>
@@ -43,4 +46,12 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block end-js %}
+    <script>
+        document.getElementById('print-page').addEventListener('click', function () {
+            window.print();
+        });
+    </script>
 {% endblock %}
