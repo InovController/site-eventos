@@ -85,7 +85,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="id_departament">Grupo Principal:</label>
+                            <label for="id_departament">Departamento:</label>
                             <select class="form-control" id="id_departament" name="departament">
                                 {% for obj in form.departament.field.queryset %}
                                     <option value="{{ obj.id }}" {% if form.departament.value == obj.id %}selected{% endif %}>{{ obj }}</option>
@@ -95,7 +95,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="id_main_group">Grupo Principal:</label>
+                            <label for="id_main_group">Evento Mestre:</label>
                             <select class="form-control" id="id_main_group" name="main_group">
                                 {% for obj in form.main_group.field.queryset %}
                                     <option value="{{ obj.id }}" {% if form.main_group.value == obj.id %}selected{% endif %}>{{ obj }}</option>
