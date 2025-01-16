@@ -162,7 +162,7 @@
             }
             
             .sombra {
-                box-shadow: 5px 5px 5px 3px rgba(73, 73, 73, 0.151) !important;
+                box-shadow: 5px 3px 5px 3px rgba(73, 73, 73, 0.089) !important;
             }
 
             .bg-nav-white {
@@ -198,7 +198,7 @@
                                 <i class="gg-menu-left"></i>
                             </button>
                         </div>
-                        <button class="topbar-toggle more">
+                        <button class="topbar-toggler more">
                             <i class="gg-more-vertical-alt"></i>
                         </button>
                     </div>
@@ -245,14 +245,14 @@
                     </div>
                     <!-- Navbar Header -->
                     <nav
-                        class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom d-print-none"
+                        class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom d-print-none sombra"
                     >
                         <div class="container-fluid">
                             <nav
                                 class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex"
                             >
                                 <form method="GET">
-                                    <div class="input-group">
+                                    <div class="input-group bg-white">
                                         <input
                                             type="text"
                                             placeholder="Search ..."
@@ -291,7 +291,7 @@
                                                     placeholder="Search ..."
                                                     class="form-control"
                                                 />
-                                                <button class="btn btn-black ml-2" type="submit">
+                                                <button class="btn btn-academy rounded-4 mx-2" type="submit">
                                                     <span class="btn-label">
                                                         <i class="fas fa-search"></i>
                                                     </span>
@@ -417,10 +417,7 @@
                                                 </li>
                                                 <li>
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item dropdown-item-academy {%if url_name == 'events_closed' %} bg-academy rounded-5 {% endif %}" href="{% url 'events_closed' %}">Meus Eventos</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item dropdown-item-academy" href="#">Alterar Dados</a>
-                                                    <a class="dropdown-item dropdown-item-academy" href="#">Configurações</a>
+                                                    <a class="dropdown-item dropdown-item-academy {% if url_name == 'events_closed' %} bg-academy {% endif %}" href="{% url 'events_closed' %}">Meus Eventos</a>
                                                     <div class="dropdown-divider"></div>
                                                     <a class="dropdown-item dropdown-item-academy" href="{% url 'logout' %}">Sair</a>
                                                 </li>
@@ -441,7 +438,7 @@
 					</div>
 				</div>
 
-                <footer class="footer d-print-none bg-nav-white sombra">
+                <footer class="footer d-print-none bg-white">
                     <div class="container-fluid d-flex justify-content-between">
                         <nav class="pull-left">
                             <ul class="nav">

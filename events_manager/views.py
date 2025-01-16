@@ -96,6 +96,9 @@ class EventCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_page'] = 'create_page'
+        
+        url_name = self.request.resolver_match.url_name
+        context['url_name'] = url_name
         return context
     
     def get_success_url(self):

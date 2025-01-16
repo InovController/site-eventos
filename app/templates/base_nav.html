@@ -43,26 +43,11 @@
         {% if user|has_group:"RH" %}
             <li class="nav-section">
                 <h4 class="text-section">Gerenciador de Eventos</h4>
-                <li class="nav-item {% block active_create %}{% endblock %}">
-                    <a data-bs-toggle="collapse" href="#create">
+                <li class="nav-item {% if url_name == 'event_create' %}active{% endif %}"">
+                    <a href="{% url 'event_create' %}">
                         <i class="fas fa-calendar-alt"></i>
-                        <p>Agendar</p>
-                        <span class="caret"></span>
+                        <p>Criar Evento</p>
                     </a>
-                    <div class="collapse" id="create">
-                        <ul class="nav nav-collapse">
-                            <li>
-                                <a href="{% url 'event_create' %}">
-                                    <span class="sub-item">Novo Evento</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="sidebar-style-2.html">
-                                    <span class="sub-item">Criar Categoria</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
                 </li>
                 <li class="nav-item {% block active_edit %}{% endblock %}">
                     <a data-bs-toggle="collapse" href="#edit">
