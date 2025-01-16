@@ -12,7 +12,7 @@ def has_group(user, group_name):
 @register.filter
 def month_year_format(value):
     try:
-        locale.setlocale(locale.LC_TIME, 'Portuguese_Brazil.1252')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         date = datetime.datetime.strptime(value, '%Y-%m')
         return date.strftime('%B de %Y').capitalize()
     except ValueError:
