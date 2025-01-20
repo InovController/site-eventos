@@ -16,7 +16,6 @@ class EventsFilteredListView(LoginRequiredMixin, ListView):
     model = Event
     context_object_name = 'grouped_events'
     
-
     def get_queryset(self):
         url_name = self.request.resolver_match.url_name
         

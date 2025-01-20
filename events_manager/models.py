@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from departaments.models import Departament
     
 
 class EventGroup(models.Model):
@@ -10,13 +11,6 @@ class EventGroup(models.Model):
 
     def __str__(self):
         return self.title
-
-
-class EventDepartament(models.Model):
-    departament = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.departament
     
 
 class Event(models.Model):
@@ -39,7 +33,7 @@ class Event(models.Model):
     duration = models.PositiveIntegerField(blank=True, null=True)
     kind = models.CharField(max_length=10, choices=TYPE_CHOICES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='aberto')
-    departament = models.ForeignKey(EventDepartament, on_delete=models.CASCADE, related_name='departaments', null=True, blank=True)
+    departament = models.ForeignKey(Departament, on_delete=models.CASCADE, related_name='departaments', null=True, blank=True)
     main_group = models.ForeignKey(EventGroup, on_delete=models.CASCADE, related_name='groups', null=True, blank=True)
     description = models.TextField()
     photo = models.ImageField(upload_to='events/', blank=True, null=True)

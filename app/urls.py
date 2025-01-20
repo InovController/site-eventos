@@ -24,9 +24,11 @@ EventParticipantsView)
 from accounts.views import RegisterView, CustomLoginView, logout_view
 from participations.views import validate_presence, subscribe_event, unsubscribe_event
 from evaluation.views import EvaluationView, evaluation_dashboard
+from departaments.views import DepartamentsListView, DepartamentsCreateView, DepartamentsUpdateView, DepartamentsDeleteView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', EventsFilteredListView.as_view(), name='events_internal'),
     path('eventos/internos', EventsFilteredListView.as_view(), name='events_internal'),
     path('eventos/externos', EventsFilteredListView.as_view(), name='events_external'),
     path('eventos/encerrados', EventsFilteredListView.as_view(), name='events_closed'),
@@ -47,6 +49,11 @@ urlpatterns = [
     path('evento/<int:pk>/editar', EventUpdateView.as_view(), name='event_update'),
     path('evento/<int:pk>/apagar', EventDeleteView.as_view(), name='event_delete'),
     path('evento/<int:pk>/participantes', EventParticipantsView.as_view(), name='event_participants'),
+
+    path('departamento/', DepartamentsListView.as_view(), name='list'),  # Listar departamentos
+    path('departamento/criar/', DepartamentsCreateView.as_view(), name='create'),  # Criar departamento
+    path('departamento/<int:pk>/editar/', DepartamentsUpdateView.as_view(), name='update'),  # Editar departamento
+    path('departamento/<int:pk>/deletar/', DepartamentsDeleteView.as_view(), name='delete'),  # Deletar departamento
 
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomLoginView.as_view(), name='login'),

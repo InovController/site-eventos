@@ -1,5 +1,5 @@
 from django.contrib import admin
-from events_manager.models import EventGroup, Event, EventDepartament
+from events_manager.models import EventGroup, Event
 
 
 class EventInline(admin.TabularInline):
@@ -21,9 +21,3 @@ class EventAdmin(admin.ModelAdmin):
     list_display = ('title', 'description', 'status', 'date', 'location')
     search_fields = ('title',)
     readonly_fields = ('qrcode', 'token')
-    
-
-@admin.register(EventDepartament)
-class EventDepartamentAdmin(admin.ModelAdmin):
-    list_display = ('departament',)
-    search_fields = ('departament',)
