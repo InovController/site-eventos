@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-^un#1k^&6wroytfy^t)-da=4)e_q)odu$k=&&vojy3%rhumvj1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -145,5 +145,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-SITE_URL = '10.100.28.3:8501'
+SITE_URL = 'eventos.controlleracademy.com.br'
 LOGIN_URL = 'login'
