@@ -1,7 +1,5 @@
-from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
-from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect   
 from django.views import View
 from users.forms import CustomUserCreationForm, CustomAuthenticationForm
@@ -19,10 +17,8 @@ class RegisterView(View):
     def post(self, request):
         user_form = CustomUserCreationForm(request.POST)
         if user_form.is_valid():
-            user = user_form.save()
+            user_form.save()
 
-            funcionario_group = Group.objects.get(name='Funcionário')
-            funcionario_group.user_set.add(user)
             return redirect('login')
             
         url_name = request.resolver_match.url_name
