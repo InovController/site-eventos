@@ -1,11 +1,8 @@
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
-from django.utils import timezone
 from django.urls import reverse_lazy
-from datetime import timedelta
 from itertools import groupby
 from events_manager.forms import EventModelForm
 from events_manager.models import Event

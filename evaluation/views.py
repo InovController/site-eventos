@@ -4,12 +4,12 @@ from evaluation.models import Evaluation, EvaluationQuestion, EvaluationResponse
 from events_manager.models import Event
 from participations.models import Participation
 from django.db.models import Avg, Count
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
 
-@method_decorator(login_required, name='dispatch')
-class EvaluationView(View):
+class EvaluationView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         event = get_object_or_404(Event, id=pk)
         
