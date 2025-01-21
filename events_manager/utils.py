@@ -15,7 +15,7 @@ def generate_short_token(length=6):
 
 
 def generate_event_qr_code(event):
-    qr_data = f"{settings.SITE_URL}/validar_presenca/{event.token}/"
+    qr_data = f"{settings.SITE_URL}/validar/{event.token}/"
     
     # Generate QR code
     qr_img = qrcode.make(qr_data)
