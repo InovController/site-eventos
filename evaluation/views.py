@@ -83,7 +83,7 @@ class EvaluationView(LoginRequiredMixin, View):
         return redirect('evaluation_form', pk=pk)
     
 
-@method_decorator(login_required, name='dispatch')
+@login_required
 def evaluation_dashboard(request, pk):
     event = Event.objects.get(id=pk)
 
