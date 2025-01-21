@@ -1,9 +1,9 @@
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
+from django.contrib import messages
 from django.shortcuts import render, redirect   
 from django.views import View
 from users.forms import CustomUserCreationForm, CustomAuthenticationForm
-from django.urls import reverse_lazy
 
 
 class RegisterView(View):
@@ -19,8 +19,10 @@ class RegisterView(View):
         if user_form.is_valid():
             user_form.save()
 
+            messages.success(request, "Cadastro realizado com sucesso! Você já pode fazer login.")
             return redirect('login')
             
+        messages.error(request, "O formulário contém erros. Por favor, corrija os campos destacados.")
         url_name = request.resolver_match.url_name
         return render(request, 'register.html', {'user_form': user_form, 'url_name': url_name})
     
@@ -36,12 +38,8 @@ class CustomLoginView(LoginView):
         url_name = self.request.resolver_match.url_name
         context['url_name'] = url_name
         return context
-    
-
-    def get_success_url(self):
-        return reverse_lazy('events_external')
 
 
 def logout_view(request):
     logout(request)
-    return redirect('events_external')
+    return redirect('events_internal')

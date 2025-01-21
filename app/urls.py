@@ -50,11 +50,11 @@ urlpatterns = [
     path('evento/<int:pk>/apagar', EventDeleteView.as_view(), name='event_delete'),
     path('evento/<int:pk>/participantes', EventParticipantsView.as_view(), name='event_participants'),
 
-    path('departamento/', DepartamentsListView.as_view(), name='list'),  # Listar departamentos
-    path('departamento/criar/', DepartamentsCreateView.as_view(), name='create'),  # Criar departamento
-    path('departamento/<int:pk>/editar/', DepartamentsUpdateView.as_view(), name='update'),  # Editar departamento
-    path('departamento/<int:pk>/deletar/', DepartamentsDeleteView.as_view(), name='delete'),  # Deletar departamento
-
+    path('departamento/', DepartamentsListView.as_view(), name='list'),
+    path('departamento/criar/', DepartamentsCreateView.as_view(), name='create'),
+    path('departamento/<int:pk>/editar/', DepartamentsUpdateView.as_view(), name='update'),
+    path('departamento/<int:pk>/deletar/', DepartamentsDeleteView.as_view(), name='delete'),
+    
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
