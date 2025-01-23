@@ -35,7 +35,10 @@
                         
                         <div class="form-group">
                             <label for="id_password">Senha: </label>
-                            <input type="password" placeholder="Digite sua senha" class="form-control" id="id_password" name="password">
+                            <div style="position: relative;">
+                                <input type="password" placeholder="Digite sua senha" class="form-control" id="id_password" name="password">
+                                <i class="far fa-eye" id="eye" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                            </div>
                             {{ form.password.errors }}
                         </div>
                     </form>
@@ -47,4 +50,19 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block end-js %}
+    <script>
+        const passwordInput = document.getElementById('id_password');
+        const eyeIcon = document.getElementById('eye');
+
+        eyeIcon.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            eyeIcon.classList.toggle('fa-eye-slash');
+            eyeIcon.classList.toggle('fa-eye');
+        });
+    </script>
 {% endblock %}

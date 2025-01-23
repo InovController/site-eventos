@@ -65,7 +65,10 @@
                     
                         <div class="form-group">
                             <label for="id_password1">Senha: </label>
-                            <input type="password" placeholder="Digite sua senha" class="form-control" id="id_password1" name="password1">
+                            <div style="position: relative;">
+                                <input type="password" placeholder="Digite sua senha" class="form-control" id="id_password1" name="password1">
+                                <i class="far fa-eye" id="eye1" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                            </div>
                             <span style="color: rgb(255, 57, 57);">
                                 {{ user_form.password1.errors }}
                             </span>
@@ -73,7 +76,10 @@
                     
                         <div class="form-group">
                             <label for="id_password2">Confirmar senha: </label>
-                            <input type="password" placeholder="Confirme sua senha" class="form-control" id="id_password2" name="password2">
+                            <div style="position: relative;">
+                                <input type="password" placeholder="Confirme sua senha" class="form-control" id="id_password2" name="password2">
+                                <i class="far fa-eye" id="eye2" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                            </div>
                             <span style="color: rgb(255, 57, 57);">
                                 {{ user_form.password2.errors }}
                             </span>
@@ -90,8 +96,29 @@
     </div>
 {% endblock %}
 
-{% block start-js %}
+{% block end-js %}
     <script>
+        const passwordInput1 = document.getElementById('id_password1');
+        const eyeIcon1 = document.getElementById('eye1');
+        const passwordInput2 = document.getElementById('id_password2');
+        const eyeIcon2 = document.getElementById('eye2');
+
+        eyeIcon1.addEventListener('click', () => {
+            const type = passwordInput1.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput1.setAttribute('type', type);
+
+            eyeIcon1.classList.toggle('fa-eye-slash');
+            eyeIcon1.classList.toggle('fa-eye');
+        });
+
+        eyeIcon2.addEventListener('click', () => {
+            const type = passwordInput2.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput2.setAttribute('type', type);
+
+            eyeIcon2.classList.toggle('fa-eye-slash');
+            eyeIcon2.classList.toggle('fa-eye');
+        });
+
         const handlePhone = (event) => {
             let input = event.target
             input.value = phoneMask(input.value)
