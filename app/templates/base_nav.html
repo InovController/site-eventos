@@ -27,18 +27,26 @@
     {% else %}
         <li class="nav-section">
             <h4 class="text-section mt-5">Visualizador de Eventos</h4>
-            <li class="nav-item {% if url_name == 'events_external' %}active{% endif %}">
+            <!-- <li class="nav-item {% if url_name == 'events_external' %}active{% endif %}">
                 <a href="{% url 'events_external' %}">
                     <i class="fas fa-door-open"></i>
                     <p>Eventos Externos</p>
                 </a>
-            </li>
+            </li> -->
             <li class="nav-item {% if url_name == 'events_internal' %}active{% endif %}">
                 <a href="{% url 'events_internal' %}">
-                    <i class="fas fa-door-closed"></i>
-                    <p>Eventos Internos</p>
+                    <i class="fas fa-door-open"></i>
+                    <p>Eventos Abertos</p>
                 </a>
             </li>
+            {% if user|has_group:"RH" %}
+                <li class="nav-item {% if url_name == 'events_closed' %}active{% endif %}">
+                    <a href="{% url 'events_closed' %}">
+                        <i class="fas fa-door-closed"></i>
+                        <p>Eventos Encerrados</p>
+                    </a>
+                </li>
+            {% endif %}
         </li>
         {% if user|has_group:"RH" %}
             <li class="nav-section">

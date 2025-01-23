@@ -32,6 +32,7 @@ urlpatterns = [
     path('eventos/internos', EventsFilteredListView.as_view(), name='events_internal'),
     path('eventos/externos', EventsFilteredListView.as_view(), name='events_external'),
     path('eventos/encerrados', EventsFilteredListView.as_view(), name='events_closed'),
+    path('eventos_participados', EventsFilteredListView.as_view(), name='my_events'),
     path('evento/<int:pk>/', EventDetailView.as_view(), name='event_detail'),
     path('evento/<int:pk>/detalhes/', EventDetailView.as_view(), name='event_detail'),
     path('evento/<int:pk>/qrcode/', EventDetailView.as_view(), name='event_qrcode'),
