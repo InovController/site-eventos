@@ -96,6 +96,8 @@
                     window.location.href = '{% url "events_external" %}';
                 } else if (origin === 'internal') {
                     window.location.href = '{% url "events_internal" %}';
+                }else if (origin === 'my_events') {
+                    window.location.href = '{% url "my_events" %}';
                 }else if (origin === 'closed') {
                     window.location.href = '{% url "events_closed" %}';
                 }
