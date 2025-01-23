@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect   
 from django.views import View
 from users.forms import CustomUserCreationForm, CustomAuthenticationForm
+from django.urls import reverse_lazy
 
 
 class RegisterView(View):
@@ -38,6 +39,10 @@ class CustomLoginView(LoginView):
         url_name = self.request.resolver_match.url_name
         context['url_name'] = url_name
         return context
+    
+    
+    def get_success_url(self):
+        return reverse_lazy('events_internal')
 
 
 def logout_view(request):
