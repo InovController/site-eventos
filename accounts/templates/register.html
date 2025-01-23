@@ -5,7 +5,7 @@
 {% block content %}
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card" style="max-width: 1200px;">
                 <div class="card-header">
                     <div class="card-title">Registrar-se</div>
                 </div>
@@ -26,43 +26,57 @@
                         <div class="form-group">
                             <label for="id_email">Email: </label>
                             <input type="email" placeholder="Digite seu email" class="form-control" id="id_email" name="email" value="{{ user_form.email.value|default_if_none:'' }}">
-                            {{ user_form.email.errors }}
+                            <span style="color: red;">
+                                {{ user_form.email.errors }}
+                            </span>
                         </div>
                     
                         <div class="form-group">
                             <label for="id_first_name">Nome: </label>
                             <input type="text" placeholder="Digite seu nome" class="form-control" id="id_first_name" name="first_name" value="{{ user_form.first_name.value|default_if_none:'' }}">
-                            {{ user_form.first_name.errors }}
+                            <span style="color: red;">
+                                {{ user_form.first_name.errors }}
+                            </span>
                         </div>
                     
                         <div class="form-group">
                             <label for="id_last_name">Sobrenome: </label>
                             <input type="text" placeholder="Digite seu sobrenome" class="form-control" id="id_last_name" name="last_name" value="{{ user_form.last_name.value|default_if_none:'' }}">
-                            {{ user_form.last_name.errors }}
+                            <span style="color: red;">
+                                {{ user_form.last_name.errors }}
+                            </span>
                         </div>
                         
                         <div class="form-group">
                             <label for="id_company">Empresa:</label>
                             <input type="text" placeholder="Digite o nome da sua empresa" class="form-control" id="id_company" name="company" value="{{ user_form.company.value|default_if_none:'' }}">
-                            {{ user_form.company.errors }}
+                            <span style="color: red;">
+                                {{ user_form.company.errors }}
+                            </span>
                         </div>
                         
                         <div class="form-group">
                             <label for="id_phone">Celular:</label>
-                            <input type="text" placeholder="(00) 00000-0000" class="form-control" id="id_phone" name="phone" value="{{ user_form.phone.value|default_if_none:'' }}">
-                            {{ user_form.phone.errors }}
+                            <input type="tel" placeholder="(00) 00000-0000" class="form-control" id="id_phone" name="phone" value="{{ user_form.phone.value|default_if_none:'' }}" maxlength="15" onkeyup="handlePhone(event)">
+                            <span style="color: red;">
+                                {{ user_form.phone.errors }}
+                            </span>
                         </div>
                     
                         <div class="form-group">
                             <label for="id_password1">Senha: </label>
                             <input type="password" placeholder="Digite sua senha" class="form-control" id="id_password1" name="password1">
-                            {{ user_form.password1.errors }}
+                            <span style="color: red;">
+                                {{ user_form.password1.errors }}
+                            </span>
                         </div>
                     
                         <div class="form-group">
                             <label for="id_password2">Confirmar senha: </label>
                             <input type="password" placeholder="Confirme sua senha" class="form-control" id="id_password2" name="password2">
-                            {{ user_form.password2.errors }}
+                            <span style="color: red;">
+                                {{ user_form.password2.errors }}
+                            </span>
                         </div>
                     
                     </form>
@@ -76,15 +90,19 @@
     </div>
 {% endblock %}
 
-{% block javascript %}
+{% block start-js %}
     <script>
-        $(document).ready(function(){
-        $('#id_phone').inputmask({
-            mask: "(99) 99999-9999",
-            placeholder: "",
-            clearIncomplete: true,
-            showMaskOnHover: false
-        });
-    });
+        const handlePhone = (event) => {
+            let input = event.target
+            input.value = phoneMask(input.value)
+        }
+        
+        const phoneMask = (value) => {
+            if (!value) return ""
+            value = value.replace(/\D/g,'')
+            value = value.replace(/(\d{2})(\d)/,"($1) $2")
+            value = value.replace(/(\d)(\d{4})$/,"$1-$2")
+            return value
+        }
     </script>
 {% endblock %}
