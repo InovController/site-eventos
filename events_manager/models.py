@@ -35,7 +35,7 @@ class Event(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='aberto')
     departament = models.ForeignKey(Departament, on_delete=models.CASCADE, related_name='departaments', null=True, blank=True)
     main_group = models.ForeignKey(EventGroup, on_delete=models.CASCADE, related_name='groups', null=True, blank=True)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     photo = models.ImageField(upload_to='events/', blank=True, null=True)
     qrcode = models.ImageField(upload_to='qrcode/', blank=True, null=True)
     token = models.CharField(max_length=8, unique=True, blank=True, null=True)
