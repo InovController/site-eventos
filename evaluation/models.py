@@ -42,7 +42,7 @@ class EvaluationResponse(models.Model):
     evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE)
     question = models.ForeignKey(EvaluationQuestion, on_delete=models.CASCADE)
     answer = models.IntegerField(choices=SCORE_CHOICES, null=True, blank=True)
-    answer_text = models.CharField(max_length=255, blank=True, null=True)
+    answer_text = models.TextField(blank=True, null=True)
 
     def clean(self):
         if self.question.question_type == 'multiple_choice' and self.answer_text:
