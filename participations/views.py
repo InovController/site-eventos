@@ -24,8 +24,6 @@ def export_participants_excel(request, event_id):
 
     bold_font = Font(bold=True)
     center_alignment = Alignment(horizontal="center")
-    green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
-    red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
 
     # Informações do evento no topo
     ws["A1"], ws["B1"] = "Título do Evento:", event.title
@@ -37,7 +35,7 @@ def export_participants_excel(request, event_id):
         ws[f"A{row}"].font = bold_font
 
     start_row = 6
-    headers = ["Nome", "E-mail", "Celular", "Empresa", "Horario", "Presença"]
+    headers = ["Nome", "E-mail", "Celular", "Empresa", "Checkin"]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=start_row, column=col_num, value=header)
         cell.font = bold_font
@@ -50,12 +48,14 @@ def export_participants_excel(request, event_id):
             ws.cell(row=row_num, column=2, value=p.user.email)
             ws.cell(row=row_num, column=3, value=p.user.phone)
             ws.cell(row=row_num, column=4, value=p.user.company)
-            joined = p.date_joined.replace(tzinfo=None)
-            ws.cell(row=row_num, column=5, value=joined.strftime("%d/%m/%Y %H:%M"))
-            
-            presenca_cell = ws.cell(row=row_num, column=6, value="Presente" if p.is_present else "Não presente")
-            presenca_cell.fill = green_fill if p.is_present else red_fill
-            presenca_cell.alignment = center_alignment
+
+            if p.date_joined:
+                dt_local = timezone.localtime(p.date_joined)
+                joined = dt_local.replace(tzinfo=None)
+                checkin = joined.strftime("%d/%m/%Y %H:%M")
+            else:
+                checkin = "—"  # Ou "", se preferir vazio
+            ws.cell(row=row_num, column=5, value=checkin)
             row_num += 1
 
     # Ajuste automático das colunas
@@ -74,6 +74,7 @@ def export_participants_excel(request, event_id):
 def export_participants_pdf(request, event_id):
     event = Event.objects.get(id=event_id)
     participants = Participation.objects.filter(event=event).select_related('user')
+    participants = sorted(participants, key=lambda p: not p.is_present)
 
     # Prepara a resposta
     response = HttpResponse(content_type='application/pdf')
@@ -110,7 +111,11 @@ def export_participants_pdf(request, event_id):
             email = p.user.email or ""
             phone = p.user.phone or ""
             contato = f"{email}\n{phone}".strip()
-            checkin = p.date_joined.replace(tzinfo=None).strftime("%d/%m/%Y %H:%M") if p.user.date_joined else ""
+            if p.date_joined:
+                dt_local = timezone.localtime(p.date_joined)
+                checkin = dt_local.strftime("%d/%m/%Y %H:%M")
+            else:
+                checkin = "—"  # Ou "", se preferir vazio
             data.append([nome, contato, checkin])
 
     # Cria tabela com estilo
