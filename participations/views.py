@@ -1,9 +1,132 @@
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from .models import Participation
 from events_manager.models import Event
+import openpyxl
+from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.utils import get_column_letter
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+
+def export_participants_excel(request, event_id):
+    event = Event.objects.get(id=event_id)
+    participants = Participation.objects.filter(event=event).select_related('user')
+    participants = sorted(participants, key=lambda p: not p.is_present)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Participantes"
+
+    bold_font = Font(bold=True)
+    center_alignment = Alignment(horizontal="center")
+    green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+    red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+
+    # Informações do evento no topo
+    ws["A1"], ws["B1"] = "Título do Evento:", event.title
+    ws["A2"], ws["B2"] = "Local:", event.location
+    ws["A3"], ws["B3"] = "Data:", event.date.strftime("%d/%m/%Y") if event.date else ""
+    ws["A4"], ws["B4"] = "Horário:", event.time.strftime("%H:%M") if event.time else ""
+
+    for row in range(1, 6):
+        ws[f"A{row}"].font = bold_font
+
+    start_row = 6
+    headers = ["Nome", "E-mail", "Celular", "Empresa", "Horario", "Presença"]
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=start_row, column=col_num, value=header)
+        cell.font = bold_font
+        cell.alignment = center_alignment
+
+    row_num = start_row + 1
+    for p in participants:
+        if p.is_present or p.signed_up:
+            ws.cell(row=row_num, column=1, value=f"{p.user.first_name} {p.user.last_name}")
+            ws.cell(row=row_num, column=2, value=p.user.email)
+            ws.cell(row=row_num, column=3, value=p.user.phone)
+            ws.cell(row=row_num, column=4, value=p.user.company)
+            joined = p.user.date_joined.replace(tzinfo=None)
+            ws.cell(row=row_num, column=5, value=joined.strftime("%d/%m/%Y %H:%M"))
+            
+            presenca_cell = ws.cell(row=row_num, column=6, value="Presente" if p.is_present else "Não presente")
+            presenca_cell.fill = green_fill if p.is_present else red_fill
+            presenca_cell.alignment = center_alignment
+            row_num += 1
+
+    # Ajuste automático das colunas
+    for col in ws.columns:
+        max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+        ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2
+
+    # Gera resposta para download
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f"participantes_{event.title}.xlsx".replace(" ", "_")
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    wb.save(response)
+    return response
+
+
+def export_participants_pdf(request, event_id):
+    event = Event.objects.get(id=event_id)
+    participants = Participation.objects.filter(event=event).select_related('user')
+
+    # Prepara a resposta
+    response = HttpResponse(content_type='application/pdf')
+    filename = f"participantes_{event.title}.pdf".replace(" ", "_")
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+
+    # Criação do PDF
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Cabeçalho do evento
+    elements.append(Paragraph(f"<b>{event.title.upper()}</b>", styles['Title']))
+    elements.append(Spacer(1, 12))
+
+    if event.location:
+        elements.append(Paragraph(f"<b>Local:</b> {event.location}", styles['Normal']))
+    if event.date:
+        elements.append(Paragraph(f"<b>Data:</b> {event.date.strftime('%d/%m/%Y')}", styles['Normal']))
+    if event.time:
+        elements.append(Paragraph(f"<b>Horário:</b> {event.time.strftime('%H:%M')}", styles['Normal']))
+    
+    elements.append(Spacer(1, 18))
+
+    # Cabeçalhos da tabela
+    data = [["Participante", "Contato", "Data/Hora Check-in"]]
+
+    # Participantes (presentes primeiro)
+    participantes_ordenados = sorted(participants, key=lambda p: not p.is_present)
+
+    for p in participantes_ordenados:
+        if p.is_present or p.signed_up:
+            nome = f"{p.user.first_name} {p.user.last_name}\n{p.user.company}"
+            email = p.user.email or ""
+            phone = p.user.phone or ""
+            contato = f"{email}\n{phone}".strip()
+            checkin = p.date_joined.strftime('%d/%m/%Y %H:%M:%S') if p.date_joined else "—"
+            data.append([nome, contato, checkin])
+
+    # Cria tabela com estilo
+    table = Table(data, colWidths=[180, 180, 130])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('FONTSIZE', (0,0), (-1,-1), 10),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('GRID', (0,0), (-1,-1), 0.25, colors.grey),
+    ]))
+
+    elements.append(table)
+    doc.build(elements)
+    return response
 
 
 @login_required(login_url='login')
