@@ -26,7 +26,7 @@
             // Notificação SweetAlert2 para validação bem-sucedida
             Swal.fire({
                 title: 'Presença validada!',
-                text: 'Sua presença foi registrada com sucesso para o evento "{{ object.title|title }}".',
+                text: '{{ message }} "{{ object.title|title }}".',
                 icon: 'success',
                 confirmButtonText: 'Ok',
                 willClose: () => {

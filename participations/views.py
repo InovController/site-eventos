@@ -10,6 +10,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from django.utils import timezone
 
 
 def export_participants_excel(request, event_id):
@@ -49,7 +50,7 @@ def export_participants_excel(request, event_id):
             ws.cell(row=row_num, column=2, value=p.user.email)
             ws.cell(row=row_num, column=3, value=p.user.phone)
             ws.cell(row=row_num, column=4, value=p.user.company)
-            joined = p.user.date_joined.replace(tzinfo=None)
+            joined = p.date_joined.replace(tzinfo=None)
             ws.cell(row=row_num, column=5, value=joined.strftime("%d/%m/%Y %H:%M"))
             
             presenca_cell = ws.cell(row=row_num, column=6, value="Presente" if p.is_present else "Não presente")
@@ -109,7 +110,7 @@ def export_participants_pdf(request, event_id):
             email = p.user.email or ""
             phone = p.user.phone or ""
             contato = f"{email}\n{phone}".strip()
-            checkin = p.date_joined.strftime('%d/%m/%Y %H:%M:%S') if p.date_joined else "—"
+            checkin = p.date_joined.replace(tzinfo=None).strftime("%d/%m/%Y %H:%M") if p.user.date_joined else ""
             data.append([nome, contato, checkin])
 
     # Cria tabela com estilo
@@ -165,15 +166,16 @@ def validate_presence(request, token):
     if participation.is_present:
         return render(request, 'validate_participation.html', {
             'object': event,
-            'message': 'Você já registrou sua presença.',  # Adiciona uma mensagem informativa
+            'message': 'Você já registrou sua presença para o evento',  # Adiciona uma mensagem informativa
             'participation': participation,
         })
 
     participation.is_present = True
+    participation.date_joined = timezone.now()
     participation.save()
 
     return render(request, 'validate_participation.html', {
         'object': event,
-        'message': 'Sua presença foi registrada com sucesso!',  # Mensagem de sucesso
+        'message': 'Sua presença foi registrada com sucesso para o evento',  # Mensagem de sucesso
         'participation': participation,
     })
