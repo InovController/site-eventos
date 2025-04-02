@@ -16,6 +16,25 @@
         .rotate-icon-down {
             transform: rotate(0deg);
         }
+        
+        .chart-card {
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            min-height: 300px;
+            max-height: 350px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: auto !important;
+            max-height: 100%;
+        }
     </style>
     <div class="page-header">
         <h4 class="page-title fs-3">Dashboard</h4>
@@ -42,11 +61,23 @@
     <div class="page-category">
         Verifique abaixo gráficos para entender melhor a avaliação comportamental e aceitação do público sobre o evento.
     </div>
-    
+    {% if not numeric_questions_by_theme and not text_questions_by_theme %}
+        <div class="alert alert-info">
+            Nenhuma avaliação foi encontrada para este evento.
+        </div>
+    {% else %}
+        <div class="mb-3">
+            <button class="btn btn-outline-primary" 
+                    onclick="exportChartsToPDF(this)" 
+                    data-event-title="{{ object.title }}">
+                <i class="fas fa-file-pdf"></i> Exportar Gráficos em PDF
+            </button>
+        </div>
+    {% endif %}
     <div class="row">
         {% for theme, questions in numeric_questions_by_theme.items %}
             <div class="col-md-6">
-                <div class="card">
+                <div class="card chart-card">
                     <div class="card-header">
                         <div class="card-title">{{ theme }}</div>
                         <div class="card-subtitle py-1">Media Geral das Respostas</div>
@@ -108,6 +139,8 @@
 {% block end-js %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
         function toggleIcon(element) {
@@ -117,22 +150,29 @@
         }
         
         function generateColorPalette(size) {
-            const colors = [
-                "rgba(46, 204, 113, 0.9)",
-                "rgba(22, 160, 133, 0.9)",
-                "rgba(41, 128, 185, 0.9)",
-                "rgba(39, 174, 96, 0.9)",
-                "rgba(142, 68, 173, 0.9)",
+            const contrastColors = [
+                "#2E86AB", "#F6C85F", "#6F4E7C", "#FF6F61", "#955251",
+                "#00A896", "#FFA69E", "#BC5090", "#4A4E69", "#88CCEE"
             ];
-            return Array.from({length: size}, (_, i) => colors[i % colors.length]);
+            return Array.from({ length: size }, (_, i) => contrastColors[i % contrastColors.length]);
         }
+                
+        const fixedPieColors = [
+            "#e57373", // Nota 1 - vermelho suave
+            "#ffb74d", // Nota 2 - laranja claro
+            "#fff176", // Nota 3 - amarelo claro
+            "#aed581", // Nota 4 - verde limão
+            "#4db6ac"  // Nota 5 - verde água
+        ];
 
         {% for theme, questions in numeric_questions_by_theme.items %}
             (function() {
-                let labels = [{% for question in questions %}"{{ question.question_text|slice:":10" }}...", {% endfor %}];
-                let data = [{% for question in questions %}parseFloat("{{ question.avg_score|floatformat:2 }}".replace(',', '.')){% if not forloop.last %}, {% endif %}{% endfor %}];
+                let labels = [{% for question in questions %} "{{ question.question_text|slice:":10" }}...", {% endfor %}];
+                let data = [{% for question in questions %} parseFloat("{{ question.avg_score|floatformat:2 }}".replace(',', '.')){% if not forloop.last %}, {% endif %}{% endfor %}];
                 let fullLabels = [{% for question in questions %}"{{ question.question_text }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
-                let backgroundColors = generateColorPalette(labels.length);
+
+                let barColors = generateColorPalette(labels.length);
+                let pieColors = fixedPieColors;
 
                 var pieChartTitle = document.getElementById('pieChartTitle-{{ forloop.counter }}')
                 pieChartTitle.textContent = fullLabels[0];
@@ -159,7 +199,7 @@
                         labels: responseDistributions[0].labels,
                         datasets: [{
                             data: responseDistributions[0].data,
-                            backgroundColor: backgroundColors,
+                            backgroundColor: pieColors,
                         }]
                     },
                     options: {
@@ -190,17 +230,15 @@
                                 formatter: (value, context) => {
                                     let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                     let percentage = (value / total * 100).toFixed(1);
-                                    let label = context.chart.data.labels[context.dataIndex];
 
-                                    if (percentage > 0) {
-                                        return  percentage + '%' + "\n" + "Nota: " + label;
-                                    } else {
-                                        return '';
-                                    }
+                                    if (percentage < 5) return '';
+
+                                    let label = context.chart.data.labels[context.dataIndex];
+                                    return percentage + '%' + "\n" + "Nota: " + label;
                                 },
                                 color: '#fff',
                                 font: {
-                                    size: '18'
+                                    size: '14'
                                 }
                             }
                         }
@@ -215,7 +253,7 @@
                         labels: labels,
                         datasets: [{
                             data: data,
-                            backgroundColor: backgroundColors,
+                            backgroundColor: barColors,
                         }]
                     },
                     options: {
@@ -257,5 +295,78 @@
                 });
             })();
         {% endfor %}
+
+        async function exportChartsToPDF(button) {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const title = button.getAttribute('data-event-title') || 'Relatório';
+            const margin = 15;
+            let y = margin;
+
+            // Título do PDF
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(18);
+            pdf.text(title.toUpperCase(), margin, y);
+            y += 12;
+
+            const charts = document.querySelectorAll('canvas');
+
+            for (let i = 0; i < charts.length; i++) {
+                const canvas = charts[i];
+
+                // Acha título e subtítulo
+                const card = canvas.closest('.card');
+                const titleEl = card?.querySelector('.card-title');
+                const subtitleEl = card?.querySelector('.card-subtitle');
+                const chartTitle = titleEl?.innerText?.trim() || `Gráfico ${i + 1}`;
+                const chartSubtitle = subtitleEl?.innerText?.trim() || '';
+
+                // Adiciona título e subtítulo do gráfico
+                if (y + 15 > 280) {
+                    pdf.addPage();
+                    y = margin;
+                }
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(14);
+                pdf.text(chartTitle, margin, y);
+                y += 6;
+
+                if (chartSubtitle) {
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(11);
+                    pdf.setTextColor(100);
+                    pdf.text(chartSubtitle, margin, y);
+                    y += 6;
+                }
+
+                // Captura imagem com qualidade melhor (escala 3)
+                const canvasImage = await html2canvas(canvas, {
+                    scale: 3, // aumento da resolução
+                    backgroundColor: "#fff"
+                });
+
+                const imgData = canvasImage.toDataURL('image/png');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = 180;
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                // Quebra de página se necessário
+                if (y + pdfHeight > 280) {
+                    pdf.addPage();
+                    y = margin;
+                }
+
+                pdf.addImage(imgData, 'PNG', margin, y, pdfWidth, pdfHeight);
+                y += pdfHeight + 10;
+
+                // Restaura fonte/cor para próximo bloco
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(11);
+                pdf.setTextColor(0);
+            }
+
+            pdf.save(`${title.toLowerCase().replace(/\s/g, "_")}_graficos.pdf`);
+        }
     </script>
 {% endblock %}

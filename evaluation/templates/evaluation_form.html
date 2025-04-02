@@ -261,13 +261,13 @@
                         text: 'Sua avaliação foi enviada com sucesso.',
                         icon: 'success',
                         showConfirmButton: true,
-                        timer: 2000,
+                        timer: 100,
                         timerProgressBar: true
                     });
 
                     setTimeout(() => {
                         this.submit();  // Enviar o formulário após o tempo definido
-                    }, 2000);  // Aguardar 2 segundos antes de enviar o formulário
+                    }, 500);  // Aguardar 2 segundos antes de enviar o formulário
                 }
             });
         });
