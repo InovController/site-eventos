@@ -160,7 +160,7 @@
         }
                 
         const fixedPieColors = [
-            "#e57373", "#ffb74d", "#fff176", "#aed581", "#4db6ac"
+            "#e57373", "#ffb74d", "#ffd330", "#aed581", "#4db6ac"
         ];
 
         {% for theme, questions in numeric_questions_by_theme.items %}
@@ -183,10 +183,13 @@
                                 {{ question.distribution.3 }},
                                 {{ question.distribution.4 }},
                                 {{ question.distribution.5 }}
+                                
                             ]
                         }{% if not forloop.last %},{% endif %}
                     {% endfor %}
                 ];
+                data: responseDistributions[0]?.data.slice() || []
+                console.log("Distribuição carregada:", responseDistributions);
 
                 var pieChartTitle = document.getElementById('pieChartTitle-{{ forloop.counter }}')
                 pieChartTitle.textContent = fullLabels[0];
@@ -278,20 +281,15 @@
                         onClick: function(evt, activeElements) {
                             if (activeElements.length > 0) {
                                 var index = activeElements[0].index;
-                                pieChart.data.datasets[0].data =[0, 0, 0, 0, 0];
+                                pieChart.data.datasets[0].data = responseDistributions[index].data.slice();
                                 pieChart.update();
-
-                                setTimeout(() => {
-                                    pieChart.data.datasets[0].data = responseDistributions[index].data;
-
-                                    pieChart.update();
-                                }, 250);
 
                                 pieChartTitle.textContent = fullLabels[index];
                             }
                         }
                     }
                 });
+                barChart.config._config.fullLabels = fullLabels;
             })();
         {% endfor %}
 
@@ -314,64 +312,182 @@
             pdf.text(splitTitle, margin, y);
             y += splitTitle.length * 6 + 6;
 
-            const charts = document.querySelectorAll('canvas');
+            const charts = Array.from(document.querySelectorAll('canvas')).filter(c => !c.id.startsWith('pieChart'));
 
-            for (let i = 0; i < charts.length; i += 2) {
+            for (let i = 0; i < charts.length; i++) {
                 if (i > 0) {
                     pdf.addPage();
                     y = margin;
                 }
 
-                for (let j = 0; j < 2; j++) {
-                    const canvas = charts[i + j];
-                    if (!canvas) continue;
+                const canvas = charts[i];
+                const card = canvas.closest('.card');
+                const titleEl = card?.querySelector('.card-title');
+                const subtitleEl = card?.querySelector('.card-subtitle');
+                const chartTitle = titleEl?.innerText?.trim() || `Gráfico ${i + 1}`;
+                const chartSubtitle = subtitleEl?.innerText?.trim() || '';
 
-                    const card = canvas.closest('.card');
-                    const titleEl = card?.querySelector('.card-title');
-                    const subtitleEl = card?.querySelector('.card-subtitle');
-                    const chartTitle = titleEl?.innerText?.trim() || `Gráfico ${i + j + 1}`;
-                    const chartSubtitle = subtitleEl?.innerText?.trim() || '';
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(14);
+                const splitChartTitle = pdf.splitTextToSize(chartTitle, maxTextWidth);
+                pdf.text(splitChartTitle, margin, y);
+                y += splitChartTitle.length * 6;
 
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setFontSize(14);
-                    const splitChartTitle = pdf.splitTextToSize(chartTitle, maxTextWidth);
-                    pdf.text(splitChartTitle, margin, y);
-                    y += splitChartTitle.length * 6;
+                if (chartSubtitle) {
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(11);
+                    pdf.setTextColor(100);
+                    const splitChartSubtitle = pdf.splitTextToSize(chartSubtitle, maxTextWidth);
+                    pdf.text(splitChartSubtitle, margin, y);
+                    y += splitChartSubtitle.length * 6;
+                    pdf.setTextColor(0);
+                }
 
-                    if (chartSubtitle) {
-                        pdf.setFont('helvetica', 'normal');
-                        pdf.setFontSize(11);
-                        pdf.setTextColor(100);
-                        const splitChartSubtitle = pdf.splitTextToSize(chartSubtitle, maxTextWidth);
-                        pdf.text(splitChartSubtitle, margin, y);
-                        y += splitChartSubtitle.length * 6;
-                        pdf.setTextColor(0);
+                const canvasImage = await html2canvas(canvas, {
+                    scale: 4,
+                    backgroundColor: "#fff",
+                    useCORS: true
+                });
+
+                const imgData = canvasImage.toDataURL('image/png');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = 180;
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                if (y + pdfHeight > pageHeight - margin) {
+                    pdf.addPage();
+                    y = margin;
+                }
+
+                pdf.addImage(imgData, 'PNG', margin, y, pdfWidth, pdfHeight);
+                y += pdfHeight + 10;
+
+                // Gera legenda se for gráfico de barras
+                if (canvas.id.startsWith("barChart")) {
+                    const chartInstance = Chart.getChart(canvas);
+                    if (chartInstance) {
+                        const labels = chartInstance.config._config.fullLabels || chartInstance.data.labels;
+                        const colors = chartInstance.data.datasets[0].backgroundColor;
+
+                        const tempDiv = document.createElement("div");
+                        tempDiv.style.display = "flex";
+                        tempDiv.style.flexWrap = "wrap";
+                        tempDiv.style.flexDirection = "row";
+                        tempDiv.style.columnGap = "20px";
+                        tempDiv.style.rowGap = "4px";
+                        tempDiv.style.position = "absolute";
+                        tempDiv.style.left = "-9999px";
+                        tempDiv.style.top = "0";
+                        tempDiv.style.width = "180mm";
+                        tempDiv.style.fontSize = "10px";
+                        tempDiv.style.fontFamily = "Helvetica, sans-serif";
+                        tempDiv.style.padding = "10px";
+                        tempDiv.style.background = "#fff";
+
+                        labels.forEach((label, idx) => {
+                            const color = colors[idx];
+                            const row = document.createElement("div");
+                            row.style.display = "flex";
+                            row.style.width = "calc(50% - 10px)";
+                            row.style.alignItems = "center";
+                            row.style.marginBottom = "4px";
+
+                            const box = document.createElement("div");
+                            box.style.width = "12px";
+                            box.style.height = "12px";
+                            box.style.backgroundColor = color;
+                            box.style.marginRight = "6px";
+                            box.style.borderRadius = "2px";
+
+                            const text = document.createElement("span");
+                            text.innerText = label;
+
+                            row.appendChild(box);
+                            row.appendChild(text);
+                            tempDiv.appendChild(row);
+                        });
+
+                        document.body.appendChild(tempDiv);
+
+                        const legendCanvas = await html2canvas(tempDiv, {
+                            scale: 2,
+                            backgroundColor: "#fff"
+                        });
+
+                        const legendImg = legendCanvas.toDataURL("image/png");
+                        const legendProps = pdf.getImageProperties(legendImg);
+                        const legendHeight = (legendProps.height * pdfWidth) / legendProps.width;
+
+                        if (y + legendHeight > pageHeight - margin) {
+                            pdf.addPage();
+                            y = margin;
+                        }
+
+                        pdf.addImage(legendImg, 'PNG', margin, y, pdfWidth, legendHeight);
+                        y += legendHeight + 10;
+
+                        document.body.removeChild(tempDiv);
                     }
-                    
-                    const canvasImage = await html2canvas(canvas, {
-                        scale: 4,
-                        backgroundColor: "#fff",
-                        useCORS: true
-                    });
-
-                    const imgData = canvasImage.toDataURL('image/png');
-                    const imgProps = pdf.getImageProperties(imgData);
-                    const pdfWidth = 180;
-                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-                    if (y + pdfHeight > pageHeight - margin) {
-                        pdf.addPage();
-                        y = margin;
-                    }
-
-                    pdf.addImage(imgData, 'PNG', margin, y, pdfWidth, pdfHeight);
-                    y += pdfHeight + (j === 0 ? 20 : 10);
                 }
             }
 
+            document.querySelectorAll('.response-container.collapse').forEach(el => {
+                el.classList.add('show');
+            });
+            const textCards = document.querySelectorAll(".card:has(.response-container)");
+            if (textCards.length > 0) {
+                pdf.addPage();
+                y = margin;
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(16);
+                pdf.text("Respostas Abertas", margin, y);
+                y += 10;
+
+                for (const card of textCards) {
+                    const theme = card.querySelector('.card-title')?.innerText?.trim();
+                    if (theme) {
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(13);
+                        pdf.text(theme, margin, y);
+                        y += 7;
+                    }
+
+                    const questions = card.querySelectorAll('.collapse-header');
+                    for (const question of questions) {
+                        const questionText = question?.innerText?.trim();
+                        if (questionText) {
+                            pdf.setFont('helvetica', 'normal');
+                            pdf.setFontSize(11);
+                            const splitQ = pdf.splitTextToSize("• " + questionText, maxTextWidth);
+                            pdf.text(splitQ, margin + 2, y);
+                            y += splitQ.length * 5;
+                        }
+
+                        const responsesContainer = question.nextElementSibling;
+                        if (responsesContainer) {
+                            const responses = responsesContainer.querySelectorAll('.response-text');
+                            for (const r of responses) {
+                                const resp = r.innerText.trim();
+                                const splitResp = pdf.splitTextToSize("- " + resp, maxTextWidth);
+                                pdf.setFontSize(10);
+                                pdf.text(splitResp, margin + 6, y);
+                                y += splitResp.length * 5;
+
+                                if (y > pageHeight - margin) {
+                                    pdf.addPage();
+                                    y = margin;
+                                }
+                            }
+                            y += 5; // espaço extra entre perguntas
+                        }
+                    }
+                }
+            }
+
+            pdf.save(`relatorio_${title.toLowerCase().replace(/\s/g, "_")}.pdf`);
             btn.disabled = false;
             btn.innerHTML = `<i class="fas fa-file-pdf"></i> Exportar Gráficos em PDF`;
-            pdf.save(`${title.toLowerCase().replace(/\s/g, "_")}_graficos.pdf`);
         }
     </script>
 {% endblock %}
