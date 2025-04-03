@@ -67,11 +67,11 @@
         </div>
     {% else %}
         <div class="mb-3">
-            <button class="btn btn-outline-primary" 
-                    onclick="exportChartsToPDF(this)" 
-                    data-event-title="{{ object.title }}">
-                <i class="fas fa-file-pdf"></i> Exportar Gráficos em PDF
-            </button>
+            <button id="exportPdfBtn" class="btn btn-outline-primary" 
+                onclick="exportChartsToPDF(this)" 
+                data-event-title="{{ object.title }}">
+            <i class="fas fa-file-pdf"></i> Exportar Gráficos em PDF
+        </button>
         </div>
     {% endif %}
     <div class="row">
@@ -143,6 +143,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
+        let isExportingPDF = false;
+
         function toggleIcon(element) {
             var icon = element.querySelector('i');
             icon.classList.toggle('rotate-icon-up');
@@ -158,24 +160,18 @@
         }
                 
         const fixedPieColors = [
-            "#e57373", // Nota 1 - vermelho suave
-            "#ffb74d", // Nota 2 - laranja claro
-            "#fff176", // Nota 3 - amarelo claro
-            "#aed581", // Nota 4 - verde limão
-            "#4db6ac"  // Nota 5 - verde água
+            "#e57373", "#ffb74d", "#fff176", "#aed581", "#4db6ac"
         ];
 
         {% for theme, questions in numeric_questions_by_theme.items %}
             (function() {
-                let labels = [{% for question in questions %} "{{ question.question_text|slice:":10" }}...", {% endfor %}];
-                let data = [{% for question in questions %} parseFloat("{{ question.avg_score|floatformat:2 }}".replace(',', '.')){% if not forloop.last %}, {% endif %}{% endfor %}];
                 let fullLabels = [{% for question in questions %}"{{ question.question_text }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+                let labels = [{% for question in questions %} "{{ question.question_text|slice:":10" }}...", {% endfor %}];
+                
+                let data = [{% for question in questions %} parseFloat("{{ question.avg_score|floatformat:2 }}".replace(',', '.')){% if not forloop.last %}, {% endif %}{% endfor %}];
 
                 let barColors = generateColorPalette(labels.length);
                 let pieColors = fixedPieColors;
-
-                var pieChartTitle = document.getElementById('pieChartTitle-{{ forloop.counter }}')
-                pieChartTitle.textContent = fullLabels[0];
                 
                 let responseDistributions = [
                     {% for question in questions %}
@@ -191,6 +187,9 @@
                         }{% if not forloop.last %},{% endif %}
                     {% endfor %}
                 ];
+
+                var pieChartTitle = document.getElementById('pieChartTitle-{{ forloop.counter }}')
+                pieChartTitle.textContent = fullLabels[0];
                 
                 let ctxPie = document.getElementById('pieChart-{{ forloop.counter }}').getContext('2d');
                 let pieChart = new Chart(ctxPie, {
@@ -297,75 +296,81 @@
         {% endfor %}
 
         async function exportChartsToPDF(button) {
+            const btn = document.getElementById('exportPdfBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Gerando PDF...`;
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             const title = button.getAttribute('data-event-title') || 'Relatório';
             const margin = 15;
-            let y = margin;
+            const maxTextWidth = 180;
+            const pageHeight = 297;
 
-            // Título do PDF
+            let y = margin;
+            
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(18);
-            pdf.text(title.toUpperCase(), margin, y);
-            y += 12;
+            const splitTitle = pdf.splitTextToSize(title.toUpperCase(), maxTextWidth);
+            pdf.text(splitTitle, margin, y);
+            y += splitTitle.length * 6 + 6;
 
             const charts = document.querySelectorAll('canvas');
 
-            for (let i = 0; i < charts.length; i++) {
-                const canvas = charts[i];
-
-                // Acha título e subtítulo
-                const card = canvas.closest('.card');
-                const titleEl = card?.querySelector('.card-title');
-                const subtitleEl = card?.querySelector('.card-subtitle');
-                const chartTitle = titleEl?.innerText?.trim() || `Gráfico ${i + 1}`;
-                const chartSubtitle = subtitleEl?.innerText?.trim() || '';
-
-                // Adiciona título e subtítulo do gráfico
-                if (y + 15 > 280) {
+            for (let i = 0; i < charts.length; i += 2) {
+                if (i > 0) {
                     pdf.addPage();
                     y = margin;
                 }
 
-                pdf.setFont('helvetica', 'bold');
-                pdf.setFontSize(14);
-                pdf.text(chartTitle, margin, y);
-                y += 6;
+                for (let j = 0; j < 2; j++) {
+                    const canvas = charts[i + j];
+                    if (!canvas) continue;
 
-                if (chartSubtitle) {
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.setFontSize(11);
-                    pdf.setTextColor(100);
-                    pdf.text(chartSubtitle, margin, y);
-                    y += 6;
+                    const card = canvas.closest('.card');
+                    const titleEl = card?.querySelector('.card-title');
+                    const subtitleEl = card?.querySelector('.card-subtitle');
+                    const chartTitle = titleEl?.innerText?.trim() || `Gráfico ${i + j + 1}`;
+                    const chartSubtitle = subtitleEl?.innerText?.trim() || '';
+
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(14);
+                    const splitChartTitle = pdf.splitTextToSize(chartTitle, maxTextWidth);
+                    pdf.text(splitChartTitle, margin, y);
+                    y += splitChartTitle.length * 6;
+
+                    if (chartSubtitle) {
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setFontSize(11);
+                        pdf.setTextColor(100);
+                        const splitChartSubtitle = pdf.splitTextToSize(chartSubtitle, maxTextWidth);
+                        pdf.text(splitChartSubtitle, margin, y);
+                        y += splitChartSubtitle.length * 6;
+                        pdf.setTextColor(0);
+                    }
+                    
+                    const canvasImage = await html2canvas(canvas, {
+                        scale: 4,
+                        backgroundColor: "#fff",
+                        useCORS: true
+                    });
+
+                    const imgData = canvasImage.toDataURL('image/png');
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = 180;
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                    if (y + pdfHeight > pageHeight - margin) {
+                        pdf.addPage();
+                        y = margin;
+                    }
+
+                    pdf.addImage(imgData, 'PNG', margin, y, pdfWidth, pdfHeight);
+                    y += pdfHeight + (j === 0 ? 20 : 10);
                 }
-
-                // Captura imagem com qualidade melhor (escala 3)
-                const canvasImage = await html2canvas(canvas, {
-                    scale: 3, // aumento da resolução
-                    backgroundColor: "#fff"
-                });
-
-                const imgData = canvasImage.toDataURL('image/png');
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = 180;
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-                // Quebra de página se necessário
-                if (y + pdfHeight > 280) {
-                    pdf.addPage();
-                    y = margin;
-                }
-
-                pdf.addImage(imgData, 'PNG', margin, y, pdfWidth, pdfHeight);
-                y += pdfHeight + 10;
-
-                // Restaura fonte/cor para próximo bloco
-                pdf.setFont('helvetica', 'normal');
-                pdf.setFontSize(11);
-                pdf.setTextColor(0);
             }
 
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-file-pdf"></i> Exportar Gráficos em PDF`;
             pdf.save(`${title.toLowerCase().replace(/\s/g, "_")}_graficos.pdf`);
         }
     </script>
