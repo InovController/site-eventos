@@ -233,7 +233,7 @@
                                     let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                     let percentage = (value / total * 100).toFixed(1);
 
-                                    if (percentage < 5) return '';
+                                    if (percentage <= 5) return '';
 
                                     let label = context.chart.data.labels[context.dataIndex];
                                     return percentage + '%' + "\n" + "Nota: " + label;
