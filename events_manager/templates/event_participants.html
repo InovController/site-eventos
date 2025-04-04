@@ -72,7 +72,7 @@
                                             <td class="text-center">{{ participant.user.email }}</td>
                                             <td class="text-center">{{ participant.user.phone }}</td>
                                             <td class="text-center">{{ participant.user.company }}</td>
-                                            <td class="text-center">{{ participant.user.date_joined|date:"d/m/Y H:i" }}</td>
+                                            <td class="text-center">{{ participant.date_joined|date:"d/m/Y H:i" }}</td>
                                             <td class="text-center">
                                                 {% if participant.is_present %}
                                                     <span class="badge bg-success">Presente</span>

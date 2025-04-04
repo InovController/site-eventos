@@ -50,6 +50,7 @@ def export_participants_excel(request, event_id):
             ws.cell(row=row_num, column=4, value=p.user.company)
 
             if p.date_joined:
+                print('a')
                 dt_local = timezone.localtime(p.date_joined)
                 joined = dt_local.replace(tzinfo=None)
                 checkin = joined.strftime("%d/%m/%Y %H:%M")
