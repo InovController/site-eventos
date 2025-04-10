@@ -41,11 +41,12 @@
                             </div>
                             {{ form.password.errors }}
                         </div>
+                        <input type="hidden" name="next" value="{{ request.GET.next }}">
                     </form>
                 </div>
                 <div class="card-action" style="display: flex; align-items: center;">
                     <button class="btn btn-academy" form="loginForm">Entrar</button>
-                    <a class="btn" style="margin-left: auto;" href="{% url 'register' %}">Cadastre-se</a>
+                    <a class="btn" style="margin-left: auto;" href="{% url 'register' %}?next={{ request.GET.next }}">Cadastre-se</a>
                 </div>
             </div>
         </div>

@@ -84,12 +84,12 @@
                                 {{ user_form.password2.errors }}
                             </span>
                         </div>
-                    
+                        <input type="hidden" name="next" value="{{ next }}">
                     </form>
                 </div>
                 <div class="card-action" style="display: flex; align-items: center;">
                     <button class="btn btn-academy" form="registerform">Cadastrar</button>
-                    <a class="btn" style="margin-left: auto;" href="{% url 'login' %}">Faça login</a>
+                    <a class="btn" style="margin-left: auto;" href="{% url 'login' %}?next={{ request.GET.next }}">Faça login</a>
                 </div>
             </div>
         </div>
