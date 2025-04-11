@@ -46,6 +46,7 @@
                 </div>
                 <div class="card-action" style="display: flex; align-items: center;">
                     <button class="btn btn-academy" form="loginForm">Entrar</button>
+                    <a class="btn" href="{% url 'password_reset' %}?next={{ request.GET.next }}">Esqueceu sua senha?</a>
                     <a class="btn" style="margin-left: auto;" href="{% url 'register' %}?next={{ request.GET.next }}">Cadastre-se</a>
                 </div>
             </div>

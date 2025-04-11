@@ -15,51 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from events_manager.views import (EventsFilteredListView,
-EventDetailView, EventCreateView, EventUpdateView, EventDeleteView, 
-EventParticipantsView)
-from accounts.views import RegisterView, CustomLoginView, logout_view
-from participations.views import validate_presence, subscribe_event, unsubscribe_event, export_participants_excel, export_participants_pdf
-from evaluation.views import EvaluationView, evaluation_dashboard
-from departaments.views import DepartamentsListView, DepartamentsCreateView, DepartamentsUpdateView, DepartamentsDeleteView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', EventsFilteredListView.as_view(), name='events_internal'),
-    path('eventos/internos', EventsFilteredListView.as_view(), name='events_internal'),
-    path('eventos/externos', EventsFilteredListView.as_view(), name='events_external'),
-    path('eventos/encerrados', EventsFilteredListView.as_view(), name='events_closed'),
-    path('eventos_participados', EventsFilteredListView.as_view(), name='my_events'),
-    path('evento/<int:pk>/', EventDetailView.as_view(), name='event_detail'),
-    path('evento/<int:pk>/detalhes/', EventDetailView.as_view(), name='event_detail'),
-    path('evento/<int:pk>/qrcode/', EventDetailView.as_view(), name='event_qrcode'),
-    path('evento/<int:pk>/material/', EventDetailView.as_view(), name='event_material'),
-    path('evento/<int:pk>/avaliacao/', EvaluationView.as_view(), name='evaluation_form'),
-    path('evento/<int:pk>/certificado/', EventDetailView.as_view(), name='event_certificate'),
-    path('evento/<int:pk>/dashboard/', evaluation_dashboard, name='evaluation_dashboard'),
-
-    path('evento/<int:pk>/inscrever/', subscribe_event, name='subscribe_event'),
-    path('evento/<int:pk>/sair/', unsubscribe_event, name='unsubscribe_event'),
-    path('event/<int:event_id>/export_excel/', export_participants_excel, name='export_participants_excel'),
-    path('event/<int:event_id>/export_pdf/', export_participants_pdf, name='export_participants_pdf'),
-
-    path('evento/<int:pk>/validar/<str:token>', validate_presence, name='validate'),
-    path('validar/<str:token>', validate_presence, name='short_validate'),
+    path('', include('accounts.urls')),
+    path('', include('departaments.urls')),
+    path('', include('evaluation.urls')),
+    path('', include('events_manager.urls')),
+    path('', include('participations.urls')),
     
-    path('evento/novo', EventCreateView.as_view(), name='event_create'),
-    path('evento/<int:pk>/editar', EventUpdateView.as_view(), name='event_update'),
-    path('evento/<int:pk>/apagar', EventDeleteView.as_view(), name='event_delete'),
-    path('evento/<int:pk>/participantes', EventParticipantsView.as_view(), name='event_participants'),
-
-    path('departamento/', DepartamentsListView.as_view(), name='list'),
-    path('departamento/criar/', DepartamentsCreateView.as_view(), name='create'),
-    path('departamento/<int:pk>/editar/', DepartamentsUpdateView.as_view(), name='update'),
-    path('departamento/<int:pk>/deletar/', DepartamentsDeleteView.as_view(), name='delete'),
-    
-    path('register/', RegisterView.as_view(), name='register'),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', logout_view, name='logout'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
