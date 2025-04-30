@@ -66,7 +66,7 @@ def export_participants_excel(request, event_id):
 
     # Gera resposta para download
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = f"participantes_{event.title}.xlsx".replace(" ", "_")
+    filename = f"participantes.xlsx".replace(" ", "_")
     response['Content-Disposition'] = f'attachment; filename={filename}'
     wb.save(response)
     return response
@@ -79,7 +79,7 @@ def export_participants_pdf(request, event_id):
 
     # Prepara a resposta
     response = HttpResponse(content_type='application/pdf')
-    filename = f"participantes_{event.title}.pdf".replace(" ", "_")
+    filename = f"participantes.pdf".replace(" ", "_")
     response['Content-Disposition'] = f'attachment; filename={filename}'
 
     # Criação do PDF

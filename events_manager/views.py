@@ -157,7 +157,9 @@ class EventParticipantsView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        event = get_object_or_404(Event, id=self.kwargs['pk'])
         context['active_page'] = 'event_participants'
         context['object'] = get_object_or_404(Event, id=self.kwargs['pk'])
+        context['participation_validated'] = Participation.objects.filter(event=event, is_present=True).count()
         return context
     

@@ -53,6 +53,11 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body table-responsive">
+                        <div class="d-flex justify-content-end mb-2">
+                            <span class="badge bg-primary fs-6">
+                                Total: {{ participation_validated }} participante{% if participation_validated != 1 %}s{% endif %}
+                            </span>
+                        </div>
                         <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
