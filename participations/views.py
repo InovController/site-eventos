@@ -4,12 +4,12 @@ from django.contrib.auth.decorators import login_required
 from .models import Participation
 from events_manager.models import Event
 import openpyxl
-from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from django.utils import timezone
 
 
@@ -25,7 +25,6 @@ def export_participants_excel(request, event_id):
     bold_font = Font(bold=True)
     center_alignment = Alignment(horizontal="center")
 
-    # Informações do evento no topo
     ws["A1"], ws["B1"] = "Título do Evento:", event.title
     ws["A2"], ws["B2"] = "Local:", event.location
     ws["A3"], ws["B3"] = "Data:", event.date.strftime("%d/%m/%Y") if event.date else ""
@@ -55,16 +54,14 @@ def export_participants_excel(request, event_id):
                 joined = dt_local.replace(tzinfo=None)
                 checkin = joined.strftime("%d/%m/%Y %H:%M")
             else:
-                checkin = "—"  # Ou "", se preferir vazio
+                checkin = "—"
             ws.cell(row=row_num, column=5, value=checkin)
             row_num += 1
 
-    # Ajuste automático das colunas
     for col in ws.columns:
         max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
         ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2
 
-    # Gera resposta para download
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     filename = f"participantes.xlsx".replace(" ", "_")
     response['Content-Disposition'] = f'attachment; filename={filename}'
@@ -77,17 +74,14 @@ def export_participants_pdf(request, event_id):
     participants = Participation.objects.filter(event=event).select_related('user')
     participants = sorted(participants, key=lambda p: not p.is_present)
 
-    # Prepara a resposta
     response = HttpResponse(content_type='application/pdf')
     filename = f"participantes.pdf".replace(" ", "_")
     response['Content-Disposition'] = f'attachment; filename={filename}'
 
-    # Criação do PDF
     doc = SimpleDocTemplate(response, pagesize=A4)
     styles = getSampleStyleSheet()
     elements = []
 
-    # Cabeçalho do evento
     elements.append(Paragraph(f"<b>{event.title.upper()}</b>", styles['Title']))
     elements.append(Spacer(1, 12))
 
@@ -100,26 +94,36 @@ def export_participants_pdf(request, event_id):
     
     elements.append(Spacer(1, 18))
 
-    # Cabeçalhos da tabela
     data = [["Participante", "Contato", "Data/Hora Check-in"]]
 
-    # Participantes (presentes primeiro)
     participantes_ordenados = sorted(participants, key=lambda p: not p.is_present)
+
+    wrapped_style = ParagraphStyle(
+        name='WrappedStyle',
+        fontSize=9,
+        leading=11,
+        wordWrap='CJK',
+        spaceAfter=4
+    )
 
     for p in participantes_ordenados:
         if p.is_present or p.signed_up:
-            nome = f"{p.user.first_name} {p.user.last_name}\n{p.user.company}"
+            nome_html = f"{p.user.first_name} {p.user.last_name}<br/><i>{p.user.company or ''}</i>"
+            nome = Paragraph(nome_html, wrapped_style)
+
             email = p.user.email or ""
             phone = p.user.phone or ""
-            contato = f"{email}\n{phone}".strip()
+            contato_html = f"{email}<br/>{phone}"
+            contato = Paragraph(contato_html, wrapped_style)
+
             if p.date_joined:
                 dt_local = timezone.localtime(p.date_joined)
                 checkin = dt_local.strftime("%d/%m/%Y %H:%M")
             else:
-                checkin = "—"  # Ou "", se preferir vazio
+                checkin = "—"
+                
             data.append([nome, contato, checkin])
 
-    # Cria tabela com estilo
     table = Table(data, colWidths=[180, 180, 130])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
