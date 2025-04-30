@@ -12,3 +12,6 @@ class Participation(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.event.title}'
+    
+    class Meta:
+        ordering = ['user__first_name', 'user__last_name']

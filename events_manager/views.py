@@ -151,7 +151,7 @@ class EventParticipantsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         event_id = self.kwargs['pk']
         event = get_object_or_404(Event, id=event_id)
-        return Participation.objects.filter(event=event).order_by('user__first_name', 'user__last_name')
+        return Participation.objects.filter(event=event)
     
 
     def get_context_data(self, **kwargs):
