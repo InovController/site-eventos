@@ -92,8 +92,8 @@
             function handleBackButtonClick() {
                 const origin = localStorage.getItem('origin');
 
-                if (origin === 'external') {
-                    window.location.href = '{% url "events_external" %}';
+                if (origin === 'pending') {
+                    window.location.href = '{% url "events_pending" %}';
                 } else if (origin === 'internal') {
                     window.location.href = '{% url "events_internal" %}';
                 }else if (origin === 'my_events') {

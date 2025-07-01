@@ -15,14 +15,14 @@ class EventsFilteredListView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         url_name = self.request.resolver_match.url_name
-        
-        # if url_name == 'events_external':
-        #     events = Event.objects.filter(kind='externo', status='aberto')
-        #     self.template_name = 'events_external.html'
 
         if url_name == 'events_internal':
             events = Event.objects.filter(kind='interno', status='aberto')
             self.template_name = 'events_internal.html'
+        
+        if url_name == 'events_pending':
+            events = Event.objects.filter(kind='interno', status='pendente')
+            self.template_name = 'events_pending.html'
 
         elif url_name == 'events_closed':
             events = Event.objects.filter(status='encerrado')
