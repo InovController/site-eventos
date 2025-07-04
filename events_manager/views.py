@@ -7,6 +7,10 @@ from itertools import groupby
 from events_manager.forms import EventModelForm
 from events_manager.models import Event
 from participations.models import Participation
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from PIL import Image, ImageDraw, ImageFont
+import io
 
 
 class EventsFilteredListView(LoginRequiredMixin, ListView):
@@ -161,5 +165,47 @@ class EventParticipantsView(LoginRequiredMixin, ListView):
         context['active_page'] = 'event_participants'
         context['object'] = get_object_or_404(Event, id=self.kwargs['pk'])
         context['participation_validated'] = Participation.objects.filter(event=event, is_present=True).count()
+        context['total_participants'] = Participation.objects.filter(event=event).count()
         return context
-    
+
+
+@login_required
+def render_certificate(request, pk):
+    user_name = request.user.first_name + ' ' + request.user.last_name
+
+    template_path = 'media/certificates/Análise_de_Balanço_1.png'
+
+    try:
+        image = Image.open(template_path)
+        draw = ImageDraw.Draw(image)
+        
+        center_x = 525
+        y = 205
+        font_size = 18
+
+        if (len(user_name) > 33 and len(user_name) < 45):
+            font_size = 16
+        elif(len(user_name) >= 45):
+            font_size = 12
+            y = 210
+        font = ImageFont.truetype('media/fonts/Sora-Medium.ttf', font_size)
+
+        name_text = user_name.upper()
+
+        bbox = draw.textbbox((0, 0), name_text, font=font)
+        text_width = bbox[2] - bbox[0]
+
+        position = (center_x - text_width // 2, y)
+
+        draw.text(position, name_text, font=font, fill="white")
+
+        buffer = io.BytesIO()
+        image.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        response = HttpResponse(buffer, content_type='image/png')
+        response['Content-Disposition'] = f'attachment; filename="certificado_{user_name}.png"'
+        return response
+
+    except Exception as e:
+        return HttpResponse(f'Erro ao gerar certificado: {e}', status=500)
