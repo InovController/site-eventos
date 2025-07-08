@@ -116,10 +116,12 @@
                             <div id="collapse-{{ question|slugify }}" class="collapse response-container">
                                 <!-- Listando cada resposta textual -->
                                 {% for answer in question.answers %}
-                                    <div class="response-card mx-3">
-                                        <span class="response-text mt-0 fs-6">{{ answer }}</span>
-                                    </div>
-                                    <hr class="response-separator mt-2 pt-2 {% if forloop.last %}mb-4{% endif %} mx-2">
+                                    {% if answer and answer.strip %}
+                                        <div class="response-card mx-3">
+                                            <span class="response-text mt-0 fs-6">{{ answer }}</span>
+                                        </div>
+                                        <hr class="response-separator mt-2 pt-2 {% if forloop.last %}mb-4{% endif %} mx-2">
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         {% endfor %}

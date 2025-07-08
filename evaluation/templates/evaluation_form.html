@@ -149,7 +149,7 @@
                                                             </div>
                                                         {% endfor %}
                                                     {% elif question.question_type == 'open_text' %}
-                                                        <textarea class="form-control" name="question_{{ question.id }}" id="question_{{ question.id }}" placeholder="Escreva sua resposta" rows="3" cols="100" required></textarea>
+                                                        <textarea class="form-control" name="question_{{ question.id }}" id="question_{{ question.id }}" placeholder="Escreva sua resposta" rows="3" cols="100"></textarea>
                                                     {% endif %}
                                                 </div>
                                             </div>
@@ -189,8 +189,7 @@
             let allAnswered = true;
 
             currentQuestions.forEach((input) => {
-                if ((input.type === 'radio' && !document.querySelector(`input[name="${input.name}"]:checked`)) ||
-                    (input.tagName === 'TEXTAREA' && input.value.trim() === '')) {
+                if (input.type === 'radio' && !document.querySelector(`input[name="${input.name}"]:checked`)) {
                     allAnswered = false;
                 }
             });
