@@ -38,6 +38,7 @@ class Event(models.Model):
     description = models.TextField(blank=True, null=True)
     photo = models.ImageField(upload_to='events/', blank=True, null=True)
     qrcode = models.ImageField(upload_to='qrcode/', blank=True, null=True)
+    certificate = models.ImageField(upload_to='certificates/', blank=True, null=True)
     token = models.CharField(max_length=8, unique=True, blank=True, null=True)
 
     def __str__(self):
