@@ -53,6 +53,7 @@
         </ul>
     </div>
     <div class="page-category">
+        
         Verifique abaixo gráficos para entender melhor a avaliação comportamental e aceitação do público sobre o evento.
     </div>
     {% if not numeric_questions_by_theme and not text_questions_by_theme %}
@@ -60,13 +61,33 @@
             Nenhuma avaliação foi encontrada para este evento.
         </div>
     {% else %}
-        <div class="mb-3">
-            <button id="exportPdfBtn" class="btn btn-outline-primary" 
-                onclick="exportChartsToPDF(this)" 
-                data-event-title="{{ object.title }}">
-            <i class="fas fa-file-pdf"></i> Exportar Gráficos em PDF
+    <div class="mb-4">
+        <button id="exportPdfBtn" class="btn btn-outline-primary" 
+        onclick="exportChartsToPDF(this)" 
+        data-event-title="{{ object.title }}"
+        data-participants-count="{{ participants_count }}"
+        data-responses-count="{{ responses_count }}">
+        <i class="fas fa-file-pdf"></i> Exportar Gráficos em PDF
         </button>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <div class="card border-start border-success border-3">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-muted mb-1">Participantes validados no evento</h6>
+                    <h4 class="card-title text-success">{{ participants_count }}</h4>
+                </div>
+            </div>
         </div>
+        <div class="col-6">
+            <div class="card border-start border-primary border-3">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-muted mb-1">Respostas ao questionário</h6>
+                    <h4 class="card-title text-primary">{{ responses_count }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endif %}
     <div class="row">
         {% for theme, questions in numeric_questions_by_theme.items %}
@@ -116,10 +137,12 @@
                             <div id="collapse-{{ question|slugify }}" class="collapse response-container">
                                 <!-- Listando cada resposta textual -->
                                 {% for answer in question.answers %}
-                                    <div class="response-card mx-3">
-                                        <span class="response-text mt-0 fs-6">{{ answer }}</span>
-                                    </div>
-                                    <hr class="response-separator mt-2 pt-2 {% if forloop.last %}mb-4{% endif %} mx-2">
+                                    {% if answer %}
+                                        <div class="response-card mx-3">
+                                            <span class="response-text mt-0 fs-6">{{ answer }}</span>
+                                        </div>
+                                        <hr class="response-separator mt-2 pt-2 {% if forloop.last %}mb-4{% endif %} mx-2">
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         {% endfor %}
@@ -293,18 +316,27 @@
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Gerando PDF...`;
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
-            const title = button.getAttribute('data-event-title') || 'Relatório';
             const margin = 15;
             const maxTextWidth = 180;
             const pageHeight = 297;
-
             let y = margin;
             
+            const title = button.getAttribute('data-event-title') || 'Relatório';
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(18);
             const splitTitle = pdf.splitTextToSize(title.toUpperCase(), maxTextWidth);
             pdf.text(splitTitle, margin, y);
             y += splitTitle.length * 6 + 6;
+
+            const totalParticipantes = button.getAttribute('data-participants-count');
+            const totalRespostas = button.getAttribute('data-responses-count');
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(80);
+            pdf.text(`Participantes presentes: ${totalParticipantes}`, margin, y + 4);
+            pdf.text(`Respostas ao questionário: ${totalRespostas}`, margin, y + 10);
+            pdf.setTextColor(0);
+            y += 25;
 
             const charts = Array.from(document.querySelectorAll('canvas')).filter(c => !c.id.startsWith('pieChart'));
 
