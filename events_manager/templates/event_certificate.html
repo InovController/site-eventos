@@ -47,23 +47,31 @@
             {% endif %}
         {% endif %}
     </div>
-        
+    
     {% if event.status == 'encerrado' and participation_validated %}
-        <div class="row">
-            <div class="col-md-12">
-                <div class="text-center">
+        {% if event.certificate %}
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-lock"></i>
+                <strong>Nenhum certificado disponível!</strong><br>
+                Entre em contato com o organizador do evento para obter o seu certificado.
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="text-center">
+                        {% if event.status == 'encerrado' %}
+                            <img src="{% url 'visualizar_certificado' event.pk %}" alt="Certificado" class="img-fluid rounded shadow-lg mb-4">
+                        {% endif %}
+                    </div>
                     {% if event.status == 'encerrado' %}
-                        <img src="{% url 'visualizar_certificado' event.pk %}" alt="Certificado" class="img-fluid rounded shadow-lg mb-4">
+                        <div class="mb-4 text-center">
+                            <a href="{% url 'visualizar_certificado' event.pk %}" download class="btn btn-primary">
+                                <i class="fas fa-download"></i> Baixar Certificado
+                            </a>
+                        </div>
                     {% endif %}
                 </div>
-                {% if event.status == 'encerrado' %}
-                    <div class="mb-4 text-center">
-                        <a href="{% url 'visualizar_certificado' event.pk %}" download class="btn btn-primary">
-                            <i class="fas fa-download"></i> Baixar Certificado
-                        </a>
-                    </div>
-                {% endif %}
             </div>
-        </div>
+        {% endif %}
     {% endif %}
 {% endblock %}
