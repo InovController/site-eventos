@@ -60,12 +60,12 @@
                 <div class="col-md-12">
                     <div class="text-center">
                         {% if event.status == 'encerrado' %}
-                            <img src="{% url 'view_certificate' event.pk %}" alt="Certificado" class="img-fluid rounded shadow-lg mb-4">
+                            <img src="{% url 'visualizar_certificado' event.pk %}" alt="Certificado" class="img-fluid rounded shadow-lg mb-4">
                         {% endif %}
                     </div>
                     {% if event.status == 'encerrado' %}
                         <div class="mb-4 text-center">
-                            <a href="{% url 'download_certificate' event.pk %}" download class="btn btn-primary">
+                            <a href="{% url 'visualizar_certificado' event.pk %}" download class="btn btn-primary">
                                 <i class="fas fa-download"></i> Baixar Certificado
                             </a>
                         </div>
