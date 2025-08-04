@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (EventsFilteredListView,
 EventDetailView, EventCreateView, EventUpdateView, EventDeleteView, 
-EventParticipantsView, render_certificate)
+EventParticipantsView, view_certificate, download_certificate)
 
 urlpatterns = [
     path('', EventsFilteredListView.as_view(), name='events_internal'),
@@ -18,5 +18,6 @@ urlpatterns = [
     path('evento/<int:pk>/editar', EventUpdateView.as_view(), name='event_update'),
     path('evento/<int:pk>/apagar', EventDeleteView.as_view(), name='event_delete'),
     path('evento/<int:pk>/participantes', EventParticipantsView.as_view(), name='event_participants'),
-    path('evento/certificado/<int:pk>/', render_certificate, name='visualizar_certificado'),
+    path('certificado/visualizar/<int:pk>/',  view_certificate, name='view_certificate'),
+    path('certificado/download/<int:pk>/', download_certificate, name='download_certificate'),
 ]

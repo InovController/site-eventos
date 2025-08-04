@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from itertools import groupby
 from events_manager.forms import EventModelForm
 from events_manager.models import Event
+from events_manager.utils import generate_certificate_response
 from participations.models import Participation
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -167,47 +168,21 @@ class EventParticipantsView(LoginRequiredMixin, ListView):
         context['participation_validated'] = Participation.objects.filter(event=event, is_present=True).count()
         context['total_participants'] = Participation.objects.filter(event=event).count()
         return context
+    
+    
+@login_required
+def view_certificate(request, pk):
+    try:
+        event = get_object_or_404(Event, id=pk)
+        return generate_certificate_response(request.user, event, for_download=False)
+    except Exception as error:
+        return HttpResponse(f'Error rendering certificate: {error}', status=500)
 
 
 @login_required
-def render_certificate(request, pk):
-    user_name = request.user.first_name + ' ' + request.user.last_name
-
-    event = get_object_or_404(Event, id=pk)
-    certificate_url = event.certificate.url
-    certificate_url = certificate_url[1:]
-
+def download_certificate(request, pk):
     try:
-        image = Image.open(certificate_url)
-        draw = ImageDraw.Draw(image)
-        
-        center_x = 525
-        y = 205
-        font_size = 18
-
-        if (len(user_name) > 33 and len(user_name) < 45):
-            font_size = 16
-        elif(len(user_name) >= 45):
-            font_size = 12
-            y = 210
-        font = ImageFont.truetype('media/fonts/Sora-Medium.ttf', font_size)
-
-        name_text = user_name.upper()
-
-        bbox = draw.textbbox((0, 0), name_text, font=font)
-        text_width = bbox[2] - bbox[0]
-
-        position = (center_x - text_width // 2, y)
-
-        draw.text(position, name_text, font=font, fill="white")
-
-        buffer = io.BytesIO()
-        image.save(buffer, format='PNG')
-        buffer.seek(0)
-
-        response = HttpResponse(buffer, content_type='image/png')
-        response['Content-Disposition'] = f'attachment; filename="certificado_{user_name}.png"'
-        return response
-
-    except Exception as e:
-        return HttpResponse(f'Erro ao gerar certificado: {e}', status=500)
+        event = get_object_or_404(Event, id=pk)
+        return generate_certificate_response(request.user, event, for_download=True)
+    except Exception as error:
+        return HttpResponse(f'Error downloading certificate: {error}', status=500)
