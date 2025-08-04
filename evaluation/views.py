@@ -6,7 +6,6 @@ from participations.models import Participation
 from django.db.models import Avg, Count
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 
 
 class EvaluationView(LoginRequiredMixin, View):
@@ -141,5 +140,7 @@ def evaluation_dashboard(request, pk):
         'object': event,
         'text_questions_by_theme': text_questions_by_theme,
         'numeric_questions_by_theme': numeric_questions_by_theme,
-        'active_page': request.resolver_match.url_name
+        'active_page': request.resolver_match.url_name,
+        'participants_count': Participation.objects.filter(event=event, is_present=True).count(),
+        'responses_count': Evaluation.objects.filter(event=event).count()
     })
