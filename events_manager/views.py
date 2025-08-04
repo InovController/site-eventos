@@ -173,10 +173,12 @@ class EventParticipantsView(LoginRequiredMixin, ListView):
 def render_certificate(request, pk):
     user_name = request.user.first_name + ' ' + request.user.last_name
 
-    template_path = 'media/certificates/Análise_de_Balanço_1.png'
+    event = get_object_or_404(Event, id=pk)
+    certificate_url = event.certificate.url
+    certificate_url = certificate_url[1:]
 
     try:
-        image = Image.open(template_path)
+        image = Image.open(certificate_url)
         draw = ImageDraw.Draw(image)
         
         center_x = 525
