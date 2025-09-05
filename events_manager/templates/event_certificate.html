@@ -2,6 +2,7 @@
 
 {% block title %}Certificado{% endblock %}
 
+{% load custom_tags %}
 {% load static %}
 {% block content %}
     <div class="page-header d-print-none">
@@ -27,7 +28,7 @@
         </ul>
     </div>
     <div class="page-category">
-        {% if not participation_validated %}
+        {% if not participation_validated and not user|has_group:"RH"%}
             <div class="alert alert-danger text-center">
                 <i class="fas fa-lock"></i>
                 <strong>Presença não confirmada!</strong><br>
@@ -48,7 +49,7 @@
         {% endif %}
     </div>
     
-    {% if event.status == 'encerrado' and participation_validated %}
+    {% if event.status == 'encerrado' and participation_validated  or user|has_group:"RH" %}
         {% if not event.certificate %}
             <div class="alert alert-warning text-center">
                 <i class="fas fa-lock"></i>
