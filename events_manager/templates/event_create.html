@@ -71,15 +71,28 @@
                             {{ form.departament.errors }}
                         </div>
                         
-                        
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="id_main_group">Evento Mestre:</label>
                             <select class="form-control" id="id_main_group" name="main_group">
                                 {% for value, label in form.main_group.field.choices %}
-                                    <option value="{{ value }}" {% if form.main_group.value == value %}selected{% endif %}>{{ label }}</option>
+                                <option value="{{ value }}" {% if form.main_group.value == value %}selected{% endif %}>{{ label }}</option>
                                 {% endfor %}
                             </select>
                             {{ form.main_group.errors }}
+                        </div> -->
+                        
+                        <div class="form-group">
+                            <label for="id_evaluation_template">Avaliação do Evento:</label>
+                            <select class="form-control" id="id_evaluation_template" name="evaluation_template">
+                                <option value="">Sem avaliação</option>
+                                {% for tpl in form.evaluation_template.field.queryset %}
+                                    <option value="{{ tpl.id }}"
+                                        {% if form.evaluation_template.value|stringformat:"s" == tpl.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ tpl.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {{ form.evaluation_template.errors }}
                         </div>
                         
                         <div class="form-group">
