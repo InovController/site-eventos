@@ -17,14 +17,20 @@ class EvaluationView(LoginRequiredMixin, View):
         
         participation_validated = Participation.objects.filter(event=event, user=request.user, is_present=True).exists()
 
-        themes = EvaluationTheme.objects.all()
+        template = event.evaluation_template
+        themes = (
+            EvaluationTheme.objects
+            .filter(evaluationquestion__template=template)
+            .distinct()
+            .order_by("id")
+        )
         questions_by_theme = {}
-        
+
         for theme in themes:
-            questions_by_theme[theme] = EvaluationQuestion.objects.filter(theme=theme)
+            questions_by_theme[theme] = EvaluationQuestion.objects.filter(template=template, theme=theme)
 
         total_pages = 1 + themes.count()
-
+        print(questions_by_theme)
         return render(request, 'evaluation_form.html', {
             'object': event,
             'evaluation': evaluation,

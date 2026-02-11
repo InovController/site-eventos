@@ -1,8 +1,14 @@
 from django.db import models
 from django.conf import settings
-from events_manager.models import Event
 from django.core.exceptions import ValidationError
 
+class EvaluationTemplate(models.Model):
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+    
 
 class EvaluationTheme(models.Model):
     name = models.CharField(max_length=255)  # Nome do tema (e.g., "Conteúdo / Programa")
@@ -16,6 +22,13 @@ class EvaluationQuestion(models.Model):
         ('multiple_choice', 'Múltipla Escolha (1-5)'),
         ('open_text', 'Resposta Aberta'),
     ]
+    template = models.ForeignKey(
+        EvaluationTemplate, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="questions"
+    )
     theme = models.ForeignKey(EvaluationTheme, on_delete=models.CASCADE)
     question_text = models.CharField(max_length=255)
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES, default='multiple_choice')
@@ -26,7 +39,7 @@ class EvaluationQuestion(models.Model):
 
 class Evaluation(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey("events_manager.Event", on_delete=models.CASCADE)
     date_submitted = models.DateTimeField(auto_now_add=True)
     is_complete = models.BooleanField(default=False)
 

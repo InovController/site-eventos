@@ -88,87 +88,95 @@
         <div class="row">
             <div class="col-md-12">
                 <form id="evaluationForm" method="POST" action="{% url 'evaluation_form' object.id %}">
-                    {% csrf_token %}
-                    <div class="question-page" id="page-1">
-                        <div class="card mb-4 shadow-lg">
-                            <div class="card-header text-light text-center rounded-top-3 bg-academy">
-                                <h5>Controle Interno – Avaliação de Reação</h5>
-                            </div>
-                            <div class="card-body mb-4">
-                                <div class="row mb-3">
-                                    <div class="col-12 text-center">
-                                        <p class="fs-5 mb-4">
-                                            Marque com um “X” ao lado de cada item descrito, sob o número que mais se aproxima de seu julgamento, de acordo com a seguinte legenda:
-                                        </p>
-                                        <div class="d-flex justify-content-center mb-4">
-                                            <div class="p-2">
-                                                <span class="badge bg-dark fs-6">1 – Péssimo</span>
+                    {% if questions_by_theme %}
+                        {% csrf_token %}
+                        <div class="question-page" id="page-1">
+                            <div class="card mb-4 shadow-lg">
+                                <div class="card-header text-light text-center rounded-top-3 bg-academy">
+                                    <h5>Controle Interno – Avaliação de Reação</h5>
+                                </div>
+                                <div class="card-body mb-4">
+                                    <div class="row mb-3">
+                                        <div class="col-12 text-center">
+                                            <p class="fs-5 mb-4">
+                                                Marque com um “X” ao lado de cada item descrito, sob o número que mais se aproxima de seu julgamento, de acordo com a seguinte legenda:
+                                            </p>
+                                            <div class="d-flex justify-content-center mb-4">
+                                                <div class="p-2">
+                                                    <span class="badge bg-dark fs-6">1 – Péssimo</span>
+                                                </div>
+                                                <div class="py-2 p-sm-2">
+                                                    <span class="badge bg-danger fs-6">2 – Ruim</span>
+                                                </div>
+                                                <div class="p-2">
+                                                    <span class="badge bg-warning fs-6">3 – Regular</span>
+                                                </div>
+                                                <div class="py-2 p-sm-2">
+                                                    <span class="badge bg-primary fs-6">4 – Bom</span>
+                                                </div>
+                                                <div class="p-2">
+                                                    <span class="badge bg-success fs-6">5 – Excelente</span>
+                                                </div>
                                             </div>
-                                            <div class="py-2 p-sm-2">
-                                                <span class="badge bg-danger fs-6">2 – Ruim</span>
-                                            </div>
-                                            <div class="p-2">
-                                                <span class="badge bg-warning fs-6">3 – Regular</span>
-                                            </div>
-                                            <div class="py-2 p-sm-2">
-                                                <span class="badge bg-primary fs-6">4 – Bom</span>
-                                            </div>
-                                            <div class="p-2">
-                                                <span class="badge bg-success fs-6">5 – Excelente</span>
-                                            </div>
+                                            <p class="text-muted">
+                                                Por favor, selecione a opção que melhor reflete sua opinião para cada item da avaliação.
+                                            </p>
                                         </div>
-                                        <p class="text-muted">
-                                            Por favor, selecione a opção que melhor reflete sua opinião para cada item da avaliação.
-                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Páginas das perguntas dinâmicas -->
-                    {% for theme, questions in questions_by_theme.items %}
-                        <div class="question-page d-none" id="page-{{ forloop.counter0|add:2 }}">
-                            <div class="card mb-4 shadow-lg">
-                                <div class="card-header text-light text-center rounded-top-3 bg-academy">
-                                    <h5>{{ theme.name }}</h5>
-                                </div>
-                                <div class="card-body mb-4">
-                                    {% for question in questions %}
-                                        <div class="row mb-4">
-                                            <div class="col-12">
-                                                <p class="fw-bold">{{ forloop.counter }}. {{ question.question_text }}</p>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="d-flex justify-content-around">
-                                                    {% if question.question_type == 'multiple_choice' %}
-                                                        {% for i in "12345" %}
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="question_{{ question.id }}_{{ i }}" value="{{ i }}" required>
-                                                                <label class="form-check-label" for="question_{{ question.id }}_{{ i }}">{{ i }}</label>
-                                                            </div>
-                                                        {% endfor %}
-                                                    {% elif question.question_type == 'open_text' %}
-                                                        <textarea class="form-control" name="question_{{ question.id }}" id="question_{{ question.id }}" placeholder="Escreva sua resposta" rows="3" cols="100"></textarea>
-                                                    {% endif %}
+                        <!-- Páginas das perguntas dinâmicas -->
+                        {% for theme, questions in questions_by_theme.items %}
+                            <div class="question-page d-none" id="page-{{ forloop.counter0|add:2 }}">
+                                <div class="card mb-4 shadow-lg">
+                                    <div class="card-header text-light text-center rounded-top-3 bg-academy">
+                                        <h5>{{ theme.name }}</h5>
+                                    </div>
+                                    <div class="card-body mb-4">
+                                        {% for question in questions %}
+                                            <div class="row mb-4">
+                                                <div class="col-12">
+                                                    <p class="fw-bold">{{ forloop.counter }}. {{ question.question_text }}</p>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="d-flex justify-content-around">
+                                                        {% if question.question_type == 'multiple_choice' %}
+                                                            {% for i in "12345" %}
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="question_{{ question.id }}_{{ i }}" value="{{ i }}" required>
+                                                                    <label class="form-check-label" for="question_{{ question.id }}_{{ i }}">{{ i }}</label>
+                                                                </div>
+                                                            {% endfor %}
+                                                        {% elif question.question_type == 'open_text' %}
+                                                            <textarea class="form-control" name="question_{{ question.id }}" id="question_{{ question.id }}" placeholder="Escreva sua resposta" rows="3" cols="100"></textarea>
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    {% endfor %}
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
+                        {% endfor %}
+                    
+                        <!-- Botões de navegação -->
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-academy mx-4 d-none" id="prevBtn" onclick="nextPrev(-1)"><i class="fas fa-angle-left"></i> Anterior</button>
+                            <button type="button" class="btn btn-academy ms-auto mx-4" id="nextBtn" onclick="nextPrev(1)">Próxima <i class="fas fa-angle-right"></i></button>
+                            <button type="submit" class="btn btn-success d-none ms-auto mx-4" id="submitBtn">Enviar</button>
                         </div>
-                    {% endfor %}
-                
-                    <!-- Botões de navegação -->
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-academy mx-4 d-none" id="prevBtn" onclick="nextPrev(-1)"><i class="fas fa-angle-left"></i> Anterior</button>
-                        <button type="button" class="btn btn-academy ms-auto mx-4" id="nextBtn" onclick="nextPrev(1)">Próxima <i class="fas fa-angle-right"></i></button>
-                        <button type="submit" class="btn btn-success d-none ms-auto mx-4" id="submitBtn">Enviar</button>
-                    </div>
-                    <div class="text-center mt-2">
-                        <p id="stepIndicator">1 de {{ total_pages }}</p>
-                    </div>
+                        <div class="text-center mt-2">
+                            <p id="stepIndicator">1 de {{ total_pages }}</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-lock"></i>
+                            <strong>Nenhuma avaliação para este evento!</strong><br>
+                            Este evento não foi anexado a nenhuma avaliação.
+                        </div>
+                    {% endif %}
                 </form>
             </div>
         </div>

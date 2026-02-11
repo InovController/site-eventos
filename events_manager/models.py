@@ -1,6 +1,6 @@
 from django.db import models
-from django.conf import settings
 from departaments.models import Departament
+from evaluation.models import EvaluationTemplate
     
 
 class EventGroup(models.Model):
@@ -40,6 +40,13 @@ class Event(models.Model):
     qrcode = models.ImageField(upload_to='qrcode/', blank=True, null=True)
     certificate = models.ImageField(upload_to='certificates/', blank=True, null=True)
     token = models.CharField(max_length=8, unique=True, blank=True, null=True)
+    evaluation_template = models.ForeignKey(
+        EvaluationTemplate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="events"
+    )
 
     def __str__(self):
         return self.title
